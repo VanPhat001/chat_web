@@ -37,13 +37,30 @@ class MessageService {
     }
 
     // find by accountId
-    async findByAccount(accountId) {
+    async findByAccount(id1, id2) {
         return await this.Message.find({
             $or: [
-                { sender: accountId },
-                { receipient: accountId }
+                { sender: id1, receipient: id2 },
+                { sender: id2, receipient: id1 }
             ]
-        }).toArray()
+        }).sort('timeSend', 1).toArray()
+    }
+
+    // get friends chat
+    async getFriendsChat(accountId) {
+        // this.Message.distinct('')
+        const result = this.Message.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { sender: accountId },
+                        { receipient: accountId }
+                    ]
+                }
+            },
+            { "$group": { "_id": { sender: "$sender", receipient: "$receipient" } } }
+        ])
+        return await result.toArray()
     }
 }
 

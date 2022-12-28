@@ -53,11 +53,12 @@ exports.deleteById = async (req, res, next) => {
     }
 }
 
-// [GET] /api/message/acc/:id
+// [GET] /api/message/acc/:id1/:id2
 exports.findMessageByAccountId = async (req, res, next) => {
     try {
         const messageService = new MessageService()
-        const messages = await messageService.findByAccount(req.params.id)
+        const {id1, id2} = req.params
+        const messages = await messageService.findByAccount(id1, id2)
 
         console.log('>> get messages by accountId')
         res.send(messages)
