@@ -9,7 +9,8 @@ app.use(epxress.json())
 
 
 app.use((req, res, next) => {
-    console.log('\n' + (new Date()).toLocaleTimeString())
+    console.clear()
+    console.log((new Date()).toLocaleTimeString())
     next()
 })
 
