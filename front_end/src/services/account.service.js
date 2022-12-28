@@ -4,7 +4,7 @@ import config from '../config'
 class AccountService {
     constructor() {
         this.api = axios.create({
-            baseURL: config.domain
+            baseURL: config.axiosURL
         })
     }
 

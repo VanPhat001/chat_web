@@ -1,6 +1,6 @@
 <script>
 import accountService from '../services/account.service'
-import {mapMutations} from 'vuex';
+import {mapMutations, mapActions} from 'vuex';
 export default {
     data() {
         return {
@@ -10,6 +10,7 @@ export default {
     },
     methods: {
         ...mapMutations(['setAccount']),
+        ...mapActions(['connectSocket']),
         async login() {
             try {
                 const account = await accountService.findByUsernameAndPassword(this.username, this.password)  
@@ -22,6 +23,8 @@ export default {
                     this.setAccount(account)
                     // alert('Đăng nhập thành công!')
                     this.$router.push('/chat-room')
+
+                    this.connectSocket()
                 } 
                 
             } catch (error) {

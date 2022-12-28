@@ -1,16 +1,18 @@
 <script>
 import messageService from '../services/message.service'
 import accountService from '../services/account.service'
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 export default {
     data() {
         return {
             friendsChat: [],
             selectFriendIndex: 0,
             messages: [],
-            text: ''
+            text: '',
+            intervalId: null
         }
     },
+
     computed: {
         ...mapGetters(['account']),
         selectFriend() {
@@ -20,7 +22,10 @@ export default {
             return this.account
         }
     },
+
     methods: {
+        ...mapActions(['socketSendMessageToFriendChat']),
+
         async setSelectFriendIndex(index) {
             this.selectFriendIndex = index
 
@@ -28,9 +33,19 @@ export default {
                 const data = await messageService.getAllMessage(this.account._id, this.selectFriend._id)
                 this.messages = data
             } catch (error) {
-                console.log(error)       
+                console.log(error)
             }
         },
+
+        scrollToLastMessage() {
+            const element = document.getElementById('hidden-item')
+            element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
+        },
+
+        resetMessageContent() {
+            this.text = ''
+        },
+
         async sendMessage() {
             const EMPTY_STRING = ''
             if (this.text != EMPTY_STRING) {
@@ -41,25 +56,60 @@ export default {
                         text: this.text,
                         image: null
                     }
-                    await messageService.createMessage(this.accountLogin._id, this.selectFriend._id, content)
-                    this.messages.push({
+
+                    const message = {
                         sender: this.accountLogin._id,
                         receipient: this.selectFriend._id,
                         content: content,
                         timeSend: new Date()
-                    })
+                    }
+
+                    // render lại dữ liệu hiển thị trên chat-room
+                    await messageService.createMessage(message.sender, message.receipient, message.content)
+                    this.messages.push(message)
+
+                    // gửi tin socket để các client khác nhận thông báo `có tin nhắn`
+                    this.socketSendMessageToFriendChat(message)
+                    this.resetMessageContent()
                 } catch (error) {
                     console.log(error)
                 }
             }
+        },
+
+        receiveMessage() {
+            this.intervalId = setInterval(() => {
+                // listen message from socket and render layout
+                // REFERENCE receiveMessageQueue TO $store.state.receiveMessageQueue
+                const receiveMessageQueue = this.$store.state.receiveMessageQueue
+
+                while (receiveMessageQueue.length > 0) {
+                    const message = receiveMessageQueue.shift()
+
+                    if (message.sender === this.accountLogin._id) {
+                        // thay đổi trạng thái đã gửi thành đã nhận
+                    }
+                    else if (message.sender === this.selectFriend._id) {
+                        this.messages.push(message)
+                    }
+                    else {
+                        // hiện notify bên sidebar
+                    }
+
+                }
+
+            }, 1000);
         }
     },
+
     async created() {
         const accountId = this.account._id
         try {
+            // get friends chat id array ===> [ accountId ]
             const friendsChat = await messageService.getFriendsChat(accountId)
             console.log(friendsChat);
 
+            // fetch api to get friends chat account  ===> [ {_id, username, password...} ]
             const getFriendsChatPromises = []
             friendsChat.forEach(friendId => {
                 getFriendsChatPromises.push(accountService.getById(friendId))
@@ -67,9 +117,20 @@ export default {
 
             const data = await Promise.all(getFriendsChatPromises)
             this.friendsChat = data
+
+            // lắng nghe dữ liệu trả về từ socket
+            this.receiveMessage()
         } catch (error) {
             console.log(error)
         }
+    },
+
+    updated() {
+        this.scrollToLastMessage()
+    },
+
+    unmounted() {
+        clearInterval(this.intervalId)
     }
 }
 </script>
@@ -111,14 +172,12 @@ export default {
             </div>
 
             <div class="chat-box">
-                <div :class="{  'message-info': true,
-                                'right': message.sender === accountLogin._id,
-                                'left': message.sender === selectFriend._id
-                            }" 
-                    v-for="(message, index) in messages" :key="index" >
+                <div :class="{ 'message-info': true, 'right': message.sender === accountLogin._id, 
+                               'left': message.sender === selectFriend._id }"
+                    v-for="(message, index) in messages" :key="index">
 
                     <template v-if="message.sender === accountLogin._id">
-                        <img class="avatar" :src="accountLogin.avatar">                        
+                        <img class="avatar" :src="accountLogin.avatar">
                         <p class="message">{{ message.content.text }}</p>
                     </template>
 
@@ -126,20 +185,9 @@ export default {
                         <img class="avatar" :src="selectFriend.avatar">
                         <p class="message">{{ message.content.text }}</p>
                     </template>
-
-
                 </div>
 
-                <!-- <div class="message-info right">
-                    <img class="avatar" src="https://i.pinimg.com/236x/93/a0/0a/93a00a3684652031a0c398c5d54d3d10.jpg">
-                    <p class="message">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Officiis dolore qui
-                        repellat nemo, fugit inventore adipisci rem dicta nobis voluptas cum aliquam delectus, amet
-                        molestiae ex iure, voluptatibus iusto asperiores!</p>
-                </div>
-                <div class="message-info left" v-for="item in 20">
-                    <img class="avatar" src="https://i.pinimg.com/236x/93/a0/0a/93a00a3684652031a0c398c5d54d3d10.jpg">
-                    <p class="message">nội dung của tin nhắn</p>
-                </div> -->
+                <div id="hidden-item" style="height: 24px;"></div>
             </div>
 
             <div class="messages-bar">
@@ -338,7 +386,7 @@ img.avatar {
         // padding-bottom: 10px;
         display: flex;
 
-        input, 
+        input,
         textarea {
             flex: 1;
             resize: none;

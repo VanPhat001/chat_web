@@ -1,5 +1,7 @@
 const state = {        
-    account: null
+    account: null,
+    socket: null,
+    receiveMessageQueue: []
 }
 
 export default state

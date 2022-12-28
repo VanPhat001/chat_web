@@ -4,12 +4,17 @@ const ApiError = require('./src/api-error')
 const router = require('./src/routes')
 
 const app = epxress()
+
+const http = require('http')
+const server = http.createServer(app)
+const { Server } = require('socket.io')
+const io = new Server(server)
+
 app.use(cors())
 app.use(epxress.json())
 
 
 app.use((req, res, next) => {
-    console.clear()
     console.log((new Date()).toLocaleTimeString())
     next()
 })
@@ -27,4 +32,4 @@ app.use((err, req, res, next) => {
 })
 
 
-module.exports = app
+module.exports = {server, io}
