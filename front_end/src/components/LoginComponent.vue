@@ -22,7 +22,7 @@ export default {
                 else {
                     this.setAccount(account)
                     // alert('Đăng nhập thành công!')
-                    this.$router.push('/chat-room')
+                    this.$router.push('/posts')
 
                     this.connectSocket()
                 } 

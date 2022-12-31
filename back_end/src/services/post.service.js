@@ -30,6 +30,20 @@ class PostService {
         return await this.Post.insertOne(post)
     }
 
+    // update by id
+    async updateById(id, { author, content, timePost, likes, comments }) {
+        const post = { author, content, timePost, likes, comments }
+        Object.keys(post).forEach(item => {
+            if (post[item] === undefined) {
+                delete post[item]
+            }
+        })
+
+        return await this.Post.updateOne(
+            { _id: ObjectId(id) },
+            { $set: post })
+    }
+
     // delete by id
     async deleteById(id) {
         return await this.Post.deleteOne({

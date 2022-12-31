@@ -204,18 +204,19 @@ export default {
 <style lang="scss" scoped>
 // ====================== layout ====================== 
 .chat-room {
-    height: 100vh;
+    // height: 100vh;
+    height: 100%;
     width: 100%;
     position: relative;
 
     .sidebar {
         height: 100%;
-        width: 300px;
+        width: 300px;        
 
         position: absolute;
         top: 0;
         left: 0;
-        bottom: 0;
+        bottom: 0;      
     }
 
     .main-box {
@@ -270,16 +271,13 @@ img.avatar {
         .friend-chat {
             // border: 1px solid green;
             display: flex;
+            margin-top: 12px;
 
             &:hover {
                 background-color: rgb(221, 216, 216);
                 cursor: pointer;
             }
-
-            &:not(:first-child) {
-                margin-top: 5px;
-            }
-
+            
             .avatar {
                 margin: 0 8px;
             }
@@ -317,6 +315,7 @@ img.avatar {
         border: 1px solid blue;
         display: flex;
         align-items: center;
+        padding: 4px 10px;
 
         .avatar {
             // --avatar-size: 40px;

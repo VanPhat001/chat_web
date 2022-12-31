@@ -6,6 +6,11 @@ const config = require('./src/config')
 io.on('connection', socket => {
     console.log('>> a user connected')
 
+    socket.on('disconnect', (reason) => {
+        console.log('>> have a user disconnect');
+        console.log(reason);
+    })
+
     socket.on('create-room', senderId => {
         // senderId === roomId === roomName
         socket.join(senderId)
