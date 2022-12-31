@@ -9,7 +9,8 @@ export default {
             selectFriendIndex: 0,
             messages: [],
             text: '',
-            intervalId: null
+            intervalId: null,
+            findAccountText: ''
         }
     },
 
@@ -99,6 +100,10 @@ export default {
                 }
 
             }, 1000);
+        },
+
+        findAccountByNameOrId() {
+            console.log('find', this.findAccountText)
         }
     },
 
@@ -141,6 +146,13 @@ export default {
     <div class="chat-room">
 
         <div class="sidebar">
+            <div class="friend-chat-find">
+                <input type="text" placeholder="Nhập tên hoặc id tài khoản" v-model="findAccountText" @keyup.enter="findAccountByNameOrId">
+                <button @click="findAccountByNameOrId">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
             <ul class="friend-chat-list">
                 <li class="friend-chat" v-for="(friend, index) in friendsChat" @click="setSelectFriendIndex(index)">
                     <img class="avatar" :src="friend.avatar">
@@ -263,9 +275,40 @@ img.avatar {
 
 // ======================= sidebar style =======================
 .sidebar {
+    --find-friend-input-height: 36px;
+    --friend-chat-padding-top-bottom: 16px;
+    .friend-chat-find {
+        position: relative;
+        padding: var(--friend-chat-padding-top-bottom) 0;
+
+        input {
+            height: var(--find-friend-input-height);
+            border-radius: var(--find-friend-input-height);            
+            width: 100%;
+            padding: 0 32px 0 12px;
+            font-size: 16px;
+        }
+
+        button {
+            position: absolute;
+            top: 50%;
+            right: 3px;
+            transform: translate(0, -50%);
+
+            height: var(--find-friend-input-height);
+            background-color: transparent;
+            border: none;
+            padding: 0 10px 0 4px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: .5;
+        }
+    }
+
     .friend-chat-list {
         border: 1px solid blue;
-        height: 100%;
+        height: calc(100% - var(--find-friend-input-height) + calc(-1) * 2 * var(--friend-chat-padding-top-bottom));
         overflow-y: auto;
 
         .friend-chat {

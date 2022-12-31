@@ -8,7 +8,7 @@
                 <div class="card">
                     <div class="card-header">
                         <img class="avatar" :src="post.author.avatar">
-                        <p class="name">{{ `${post.author.lastName} ${post.author.firstName}` }}</p>
+                        <p class="name">{{ getFullName(post.author) }}</p>
                     </div>
 
                     <div class="card-body">
@@ -34,10 +34,10 @@
                             <ul class="another-comment-list">
                                 <li class="another-comment" v-for="comment in commentsOfPost[index]">
                                     <div class="col-left">
-                                        <img :src="comment?.avatar" class="avatar">
+                                        <img :src="getAccountById(comment.accountId).avatar" class="avatar">
                                     </div>
                                     <div class="col-right">
-                                        <p class="name">{{ comment?.name }}</p>
+                                        <p class="name">{{ getFullName(getAccountById(comment.accountId)) }}</p>
                                         <p class="comment">{{ comment.text }}</p>
                                     </div>
                                 </li>
@@ -87,7 +87,8 @@ export default {
     data() {
         return {
             posts: [],
-            commentsOfPost: []
+            commentsOfPost: [],
+            accountsMap: new Map()
         }
     },
 
@@ -98,6 +99,12 @@ export default {
     },
 
     methods: {
+        getAccountById(id) {
+            return this.accountsMap.get(id)
+        },
+        getFullName(account) {
+            return `${account.lastName} ${account.firstName}`
+        },
         scrollToHiddenItem() {
             const hiddenItem = document.querySelector('.hidden-item')
             hiddenItem.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
@@ -140,15 +147,41 @@ export default {
             const commentsId = this.posts[index].comments
             console.log(commentsId)
 
-            const tasks = []
-            for (let i = 0; i < commentsId.length; i++) {
-                const commentId = commentsId[i]
-                tasks.push(commentService.getCommentId(commentId))
-            }
+            try {
+                //#region 
+                const tasks = []
+                for (let i = 0; i < commentsId.length; i++) {
+                    const commentId = commentsId[i]
+                    tasks.push(commentService.getCommentId(commentId))
+                }
 
-            const data = await Promise.all(tasks)
-            console.log(data);
-            this.commentsOfPost[index] = data
+                const data = await Promise.all(tasks)
+                console.log(data);
+                //#endregion
+
+                //#region 
+                const map = this.accountsMap
+                tasks.splice(0, tasks.length)
+                for (let i = 0; i < data.length; i++) {
+                    const accountId = data[i].accountId
+                    if (!map.has(accountId)) {
+                        map.set(accountId, null)
+                        tasks.push(accountService.getById(accountId))
+                    }
+                }
+
+                const data2 = await Promise.all(tasks)
+                for (let i = 0; i < data2.length; i++) {
+                    const account = data2[i]
+                    map.set(account._id, account)
+                }
+                console.log(map);
+                //#endregion
+
+                this.commentsOfPost[index] = data
+            } catch (error) {
+                console.log(error);
+            }
         },
         async sendComment(index) {
             const inputElement = this.$refs['user-comment-input'][index]
@@ -198,6 +231,7 @@ export default {
         }
 
         this.posts = data
+        this.accountsMap.set(this.userLogin._id, this.userLogin)
     }
 }
 </script>

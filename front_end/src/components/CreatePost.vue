@@ -19,6 +19,7 @@ export default {
                     content: this.textContent,
                 })
                 alert('ok')
+                this.$router.push('/posts')
             } catch (error) {
                 console.log(error);
                 alert('error')
