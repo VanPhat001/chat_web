@@ -53,3 +53,31 @@ exports.deleteById = async (req, res, next) => {
         next(error)
     }
 }
+
+// [PATCH] /api/post/:id
+exports.updateById = async (req, res, next) => {
+    try {
+        const postService = new PostService()
+
+        const data = await postService.updateById(req.params.id, req.body)
+
+        console.log('>> [PATCH] update post by id')
+        res.send(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
+// [PATCH] /api/post/:id/cmt/:cmtId
+exports.pushComment = async (req, res, next) => {
+    try {
+        const postService = new PostService()
+
+        const data = await postService.pushComment(req.params.id, req.params.cmtId)
+
+        console.log('>> push comment into Post.comments')
+        res.send(data)
+    } catch (error) {
+        next(error)
+    }
+}

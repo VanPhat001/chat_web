@@ -12,11 +12,41 @@ class AccountService {
     }
 
     // find by username & password
-    async findByUsernameAndPassword(username, password) {        
+    async findByUsernameAndPassword(username, password) {
         return await this.Account.findOne({
             username: username,
             password: password
         })
+    }
+
+    // find by name or id
+    async findByNameOrId(text) {
+        let _id = null
+        try { _id = ObjectId(text) }
+        catch (error) { }
+
+        const regex = new RegExp(["^", text, "$"].join(""), "i");
+        // Creates a regex of: /^text-value$/i        
+
+        const data = await this.Account.aggregate([
+            {
+                $project: {
+                    'name': {
+                        $concat: ["$lastName", " ", "$firstName"]
+                    }
+                }
+            },
+            {
+                $match: {
+                    $or: [
+                        { '_id': _id },
+                        { 'name': regex }
+                    ]
+                }
+            }
+        ]).toArray()
+
+        return data
     }
 
     // get by id
@@ -51,8 +81,8 @@ class AccountService {
         })
 
         return await this.Account.updateOne(
-            { _id: ObjectId(id) }, 
-            {$set: account })
+            { _id: ObjectId(id) },
+            { $set: account })
     }
 
     // delete by id

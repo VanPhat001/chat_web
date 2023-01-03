@@ -80,3 +80,27 @@ exports.findByUsernameAndPassword = async (req, res, next) => {
         next(error)
     }
 }
+
+// [GET] /api/account/text/:text
+exports.findByNameOrId = async (req, res, next) => {
+    try {
+        const accountService = new AccountService()
+
+        const text = req.params.text.trim()
+        const usrList = await accountService.findByNameOrId(text)
+        // usrList = {_id: ObjectId(...), name: lastName + ' ' + firstName}
+
+        const tasks = []
+        usrList.forEach(item => {
+            const id = item._id.toString()
+            tasks.push(accountService.getById(id))
+        })
+
+        const accounts = await Promise.all(tasks)
+
+        console.log('>> find accounts by name or id')
+        res.send(accounts)
+    } catch (error) {
+        next(error)
+    }
+}

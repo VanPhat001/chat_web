@@ -7,6 +7,9 @@ const getters = {
     },
     receiveMessageQueue(state) {
         return state.receiveMessageQueue
+    },
+    accountMap(state) {
+        return state.accountMap
     }
 }
 

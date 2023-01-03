@@ -51,6 +51,15 @@ class PostService {
         })
     }
 
+    // push comment into Post.comments
+    async pushComment(postId, cmtId) {
+        const data = await this.Post.updateOne(
+            { _id: ObjectId(postId) },
+            { $push: { comments: cmtId } }
+        )
+        return data
+    }
+
 }
 
 module.exports = PostService

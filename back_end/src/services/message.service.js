@@ -62,6 +62,11 @@ class MessageService {
         ])
         return await result.toArray()
     }
+
+    // delete all messages 
+    async deleteAll() {
+        return await this.Message.deleteMany({})
+    }
 }
 
 module.exports = MessageService

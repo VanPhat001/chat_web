@@ -66,3 +66,28 @@ exports.findMessageByAccountId = async (req, res, next) => {
         next(error)
     }
 }
+
+// [GET] /api/message/:id/friends
+exports.getFriendsChat = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const messageService = new MessageService()
+        const data = await messageService.getFriendsChat(id)
+
+        const friendsChatSet = new Set()            
+        data.forEach(objElement => {
+            if (objElement._id.sender == id) {
+                friendsChatSet.add(objElement._id.receipient)
+            }
+            else {
+                friendsChatSet.add(objElement._id.sender)
+            }
+        })
+
+        const friendsChatArray = [...friendsChatSet]            
+        console.log('>> get friends chat')
+        res.send(friendsChatArray)
+    } catch (error) {
+        next(error)
+    }
+}

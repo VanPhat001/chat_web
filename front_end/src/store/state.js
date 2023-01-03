@@ -1,7 +1,8 @@
 const state = {        
     account: null,
     socket: null,
-    receiveMessageQueue: []
+    receiveMessageQueue: [],
+    accountMap: new Map() 
 }
 
 export default state

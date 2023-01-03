@@ -29,6 +29,11 @@ class PostService {
             author, content, timePost, likes, comments
         })).data
     }
+
+    async pushComment(postId, cmtId) {
+        // [PATCH] /api/post/:id/cmt/:cmtId
+        return (await this.api.patch(`/post/${postId}/cmt/${cmtId}`)).data
+    }
 }
 
 export default new PostService()

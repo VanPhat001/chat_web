@@ -12,19 +12,11 @@ router.route('/')
 router.route('/:id')
     .get(postController.getById)
     .delete(postController.deleteById)
-    .patch(async (req, res, next) => {
-        try {
-            const PostService = require('../services/post.service')
-            const postService = new PostService()
+    .patch(postController.updateById)
 
-            const data = await postService.updateById(req.params.id, req.body)
-
-            console.log('>> [PATCH] update post by id')
-            res.send(data)
-        } catch (error) {
-            next(error)
-        }
-    })
+// route: /api/post/:id/cmt/:cmtId
+router.route('/:id/cmt/:cmtId')
+    .patch(postController.pushComment)
 
 
 module.exports = router

@@ -17,6 +17,12 @@ class AccountService {
         // [GET] /api/account/:id
         return (await this.api(`/account/${accountId}`)).data
     }
+
+    async findByNameOrId(text) {
+        // [GET] /api/account/text/:text
+        return (await this.api.get(`/account/text/${text}`)).data
+    }
+
 }
 
 export default (new AccountService())

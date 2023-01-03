@@ -1,16 +1,22 @@
 <script>
+import AccountList from './AccountList.vue';
 import messageService from '../services/message.service'
 import accountService from '../services/account.service'
 import { mapGetters, mapActions } from 'vuex';
 export default {
+    components: {
+        AccountList
+    },
     data() {
         return {
             friendsChat: [],
+            notifyNumber: [],
             selectFriendIndex: 0,
             messages: [],
             text: '',
             intervalId: null,
-            findAccountText: ''
+            findAccountText: '',
+            findAccounts: [],
         }
     },
 
@@ -33,9 +39,15 @@ export default {
             try {
                 const data = await messageService.getAllMessage(this.account._id, this.selectFriend._id)
                 this.messages = data
+                this.notifyNumber[index] = 0
             } catch (error) {
                 console.log(error)
             }
+        },
+
+        getTime(dateTimeString) {
+            const date = new Date(dateTimeString)
+            return date.toLocaleTimeString()
         },
 
         scrollToLastMessage() {
@@ -79,7 +91,7 @@ export default {
         },
 
         receiveMessage() {
-            this.intervalId = setInterval(() => {
+            this.intervalId = setInterval(async () => {
                 // listen message from socket and render layout
                 // REFERENCE receiveMessageQueue TO $store.state.receiveMessageQueue
                 const receiveMessageQueue = this.$store.state.receiveMessageQueue
@@ -88,13 +100,32 @@ export default {
                     const message = receiveMessageQueue.shift()
 
                     if (message.sender === this.accountLogin._id) {
-                        // thay đổi trạng thái đã gửi thành đã nhận
+                        // thay đổi trạng thái đã gửi thành đã nhận 
                     }
-                    else if (message.sender === this.selectFriend._id) {
+                    else if (message.sender === this.selectFriend?._id) {
                         this.messages.push(message)
                     }
                     else {
-                        // hiện notify bên sidebar
+                        const friendId = message.sender
+                        const friendChat = await accountService.getById(friendId)
+
+                        // sender có trong friendsChat
+                        // ---> tăng notify lên 1
+                        // sender không có trong friendsChat
+                        // ---> thêm account bên sidebar và hiện notify có tin nhắn mới
+
+                        const indexFound = this.friendsChat.findIndex(acc => acc._id == friendChat._id)
+                        const NOT_FOUND = -1
+
+                        if (indexFound === NOT_FOUND) {
+                            this.friendsChat.push(friendChat)
+                            this.notifyNumber.push(1)
+                        }
+                        else {
+                            this.notifyNumber[indexFound]++
+                        }
+
+
                     }
 
                 }
@@ -102,8 +133,33 @@ export default {
             }, 1000);
         },
 
-        findAccountByNameOrId() {
-            console.log('find', this.findAccountText)
+        hideModel() {
+            const modelElement = this.$refs['model']
+            modelElement.classList.add('hide')            
+        },
+
+        selectAccountHandle(index) {
+            const account = this.findAccounts[index]
+
+            const result = this.friendsChat.find(friend => friend._id == account._id)
+            const NOT_FOUND = undefined
+
+            if (result === NOT_FOUND) {
+                this.friendsChat.push(account)
+            }
+
+            this.hideModel()
+        },
+
+        async findAccountByNameOrId() {
+            try {
+                this.findAccounts = await accountService.findByNameOrId(this.findAccountText)
+
+                const modelElement = this.$refs['model']
+                modelElement.classList.remove('hide')
+            } catch (error) {
+                console.log(error)
+            }
         }
     },
 
@@ -121,6 +177,10 @@ export default {
             })
 
             const data = await Promise.all(getFriendsChatPromises)
+            for (let i = 0; i < data.length; i++) {
+                this.notifyNumber.push(0)
+            }
+
             this.friendsChat = data
 
             // lắng nghe dữ liệu trả về từ socket
@@ -145,9 +205,15 @@ export default {
 <template >
     <div class="chat-room">
 
+        <div ref='model' class="model hide">
+            <div class="background" @click="hideModel"></div>
+            <AccountList class="account-list" :pAccounts="findAccounts" @selectAccount="selectAccountHandle"></AccountList>
+        </div>
+
         <div class="sidebar">
             <div class="friend-chat-find">
-                <input type="text" placeholder="Nhập tên hoặc id tài khoản" v-model="findAccountText" @keyup.enter="findAccountByNameOrId">
+                <input type="text" placeholder="Nhập tên hoặc id tài khoản" v-model="findAccountText"
+                    @keyup.enter="findAccountByNameOrId">
                 <button @click="findAccountByNameOrId">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -159,15 +225,9 @@ export default {
                     <div class="info">
                         <p class="name">{{ friend.lastName + ' ' + friend.firstName }}</p>
                         <!-- <p class="text">friend chat text </p> -->
+                        <div class="notify-number" v-if="notifyNumber[index] != 0">{{ notifyNumber[index] }}</div>
                     </div>
                 </li>
-                <!-- <li class="friend-chat" v-for="item in 20">
-                    <img class="avatar" src="https://i.pinimg.com/236x/93/a0/0a/93a00a3684652031a0c398c5d54d3d10.jpg">
-                    <div class="info">
-                        <p class="name">friend chat name</p>
-                        <p class="text">friend chat text </p>
-                    </div>
-                </li> -->
             </ul>
         </div>
 
@@ -184,18 +244,17 @@ export default {
             </div>
 
             <div class="chat-box">
-                <div :class="{ 'message-info': true, 'right': message.sender === accountLogin._id, 
-                               'left': message.sender === selectFriend._id }"
+                <div :class="{ 'message-info': true, 'right': message.sender === accountLogin._id, 'left': message.sender === selectFriend._id }"
                     v-for="(message, index) in messages" :key="index">
 
                     <template v-if="message.sender === accountLogin._id">
                         <img class="avatar" :src="accountLogin.avatar">
-                        <p class="message">{{ message.content.text }}</p>
+                        <p class="message" :title="getTime(message.timeSend) ">{{ message.content.text }}</p>
                     </template>
 
                     <template v-else>
                         <img class="avatar" :src="selectFriend.avatar">
-                        <p class="message">{{ message.content.text }}</p>
+                        <p class="message" :title="getTime(message.timeSend)">{{ message.content.text }}</p>
                     </template>
                 </div>
 
@@ -214,7 +273,38 @@ export default {
 
 
 <style lang="scss" scoped>
+.hide {
+    display: none;
+}
+
 // ====================== layout ====================== 
+
+
+.model {
+    .background {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.39);
+        z-index: 1;
+    }
+
+    .account-list {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+
+        background-color: var(--color-background);
+        padding: 24px;
+        border: 1px solid red;
+        max-width: 80%;
+        max-height: 80%;
+        width: 400px;
+        height: 500px;
+    }
+}
+
 .chat-room {
     // height: 100vh;
     height: 100%;
@@ -223,12 +313,12 @@ export default {
 
     .sidebar {
         height: 100%;
-        width: 300px;        
+        width: 300px;
 
         position: absolute;
         top: 0;
         left: 0;
-        bottom: 0;      
+        bottom: 0;
     }
 
     .main-box {
@@ -277,13 +367,14 @@ img.avatar {
 .sidebar {
     --find-friend-input-height: 36px;
     --friend-chat-padding-top-bottom: 16px;
+
     .friend-chat-find {
         position: relative;
         padding: var(--friend-chat-padding-top-bottom) 0;
 
         input {
             height: var(--find-friend-input-height);
-            border-radius: var(--find-friend-input-height);            
+            border-radius: var(--find-friend-input-height);
             width: 100%;
             padding: 0 32px 0 12px;
             font-size: 16px;
@@ -320,13 +411,14 @@ img.avatar {
                 background-color: rgb(221, 216, 216);
                 cursor: pointer;
             }
-            
+
             .avatar {
                 margin: 0 8px;
             }
 
             .info {
                 flex: 1;
+                position: relative;
                 // &>* {
                 //     border: 1px solid gray;
                 // }
@@ -343,6 +435,23 @@ img.avatar {
                     display: -webkit-box;
                     -webkit-line-clamp: 1;
                     -webkit-box-orient: vertical;
+                }
+
+                .notify-number {                    
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    line-height: 24px;
+                    text-align: center;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 12px;
+                    background-color: royalblue;
+
+                    position: absolute;
+                    top: 50%;
+                    right: 12px;
+                    transform: translateY(-50%);
                 }
             }
         }
