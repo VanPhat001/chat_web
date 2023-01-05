@@ -11,9 +11,10 @@
             </div>
             <div class="card-body">
                 <div class="content">
-                    <p class="content-text">{{ post.content }}</p>
+                    <p class="content-text">{{ post.content.text }}</p>
                     <img class="content-image"
-                        src="https://i.pinimg.com/originals/70/e5/fa/70e5faaff18b9076b7a82a9aaa1d94ff.gif">
+                        v-if="post.content.image !== null"
+                        :src="post.content.image">
                 </div>
 
                 <div class="controls">
@@ -103,7 +104,10 @@
                 text-align: left;
             }
 
-            &-image {}
+            &-image {
+                margin-top: 6px;
+                max-width: 100%;
+            }
         }
 
         .controls {

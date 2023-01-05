@@ -46,6 +46,16 @@ class MessageService {
         }).sort('timeSend', 1).toArray()
     }
 
+    // get all last messages of user
+    async getAllMesseageOfUser(userId) {
+        return await this.Message.find({
+            $or: [
+                { sender: userId },
+                { receipient: userId }
+            ]
+        }).toArray()
+    }
+
     // get friends chat
     async getFriendsChat(accountId) {
         // this.Message.distinct('')

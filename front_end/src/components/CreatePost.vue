@@ -3,7 +3,8 @@ import postService from '../services/post.service'
 export default {
     data() {
         return {
-            textContent: ''
+            textContent: '',
+            imgLink: ''
         }
     },
     computed: {
@@ -12,12 +13,21 @@ export default {
         }
     },
     methods: {
+        selectImage() {
+            console.log(this.imgLink)
+        },
         async createPost() {
             try {
+                const content = {
+                    text: this.textContent.length > 0 ? this.textContent : null,
+                    image: this.imgLink.length > 0 ? this.imgLink : null
+                }
+
                 await postService.create({
                     author: this.userLogin._id,
-                    content: this.textContent,
+                    content: content
                 })
+                
                 alert('ok')
                 this.$router.push('/posts')
             } catch (error) {
@@ -42,10 +52,19 @@ export default {
             <div class="box-body">
                 <textarea class="content" cols="30" rows="10" v-model="textContent"
                     placeholder="nhập nội dung"></textarea>
+
+                <label for="post-image">Image link:</label> 
+                <input id="post-image" type="text" v-model="imgLink"
+                    @keyup="selectImage">                    
+                <br>
+
+                <div style="text-align: center;">
+                    <img :src="imgLink">
+                </div>
             </div>
 
             <div class="box-footer">
-                <button :class="{ 'btn-post': true, 'btn': textContent.length > 0 }" :disabled="textContent.length == 0"
+                <button :class="{ 'btn-post': true, 'btn': textContent.length > 0 || imgLink.length > 0 }" :disabled="textContent.length == 0 && imgLink.length == 0"
                     @click="createPost">Đăng</button>
             </div>
 
@@ -85,6 +104,16 @@ export default {
         textarea {
             width: 100%;
             resize: vertical;
+        }
+
+        input {
+            width: 100%;
+            padding: 3px 8px;
+        }
+
+        img {
+            margin-top: 8px;
+            max-width: 100%;
         }
     }
 

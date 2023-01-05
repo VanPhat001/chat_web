@@ -32,6 +32,11 @@ class MessageService {
             content: content
         })).data
     }
+    
+    async getAllLastMessOfUserToFriends(id) {
+        // [GET] /api/message/last/acc/:id
+        return (await this.api.get(`/message/last/acc/${id}`)).data
+    }
 }
 
 export default new MessageService()

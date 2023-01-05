@@ -17,6 +17,7 @@ export default {
             intervalId: null,
             findAccountText: '',
             findAccounts: [],
+            lastMessages: []
         }
     },
 
@@ -45,9 +46,9 @@ export default {
             }
         },
 
-        getTime(dateTimeString) {
+        getDateTime(dateTimeString) {
             const date = new Date(dateTimeString)
-            return date.toLocaleTimeString()
+            return date.toLocaleString()
         },
 
         scrollToLastMessage() {
@@ -80,6 +81,7 @@ export default {
                     // render lại dữ liệu hiển thị trên chat-room
                     await messageService.createMessage(message.sender, message.receipient, message.content)
                     this.messages.push(message)
+                    this.loadPreviewLastMessage()
 
                     // gửi tin socket để các client khác nhận thông báo `có tin nhắn`
                     this.socketSendMessageToFriendChat(message)
@@ -104,6 +106,7 @@ export default {
                     }
                     else if (message.sender === this.selectFriend?._id) {
                         this.messages.push(message)
+                        await this.loadPreviewLastMessage()
                     }
                     else {
                         const friendId = message.sender
@@ -125,7 +128,7 @@ export default {
                             this.notifyNumber[indexFound]++
                         }
 
-
+                        await this.loadPreviewLastMessage()
                     }
 
                 }
@@ -133,9 +136,31 @@ export default {
             }, 1000);
         },
 
+        async loadPreviewLastMessage() {
+            const userId = this.account._id
+            const lastMessages = await messageService.getAllLastMessOfUserToFriends(userId)
+
+            const map = new Map()
+            lastMessages.forEach(mess => {
+                if (mess.sender == userId) {
+                    map.set(mess.receipient, mess)
+                }
+                else {
+                    map.set(mess.sender, mess)
+                }
+            })
+
+            const data = []
+            this.friendsChat.forEach(friend => {
+                data.push(map.get(friend._id))
+            })
+
+            this.lastMessages = data
+        },
+
         hideModel() {
             const modelElement = this.$refs['model']
-            modelElement.classList.add('hide')            
+            modelElement.classList.add('hide')
         },
 
         selectAccountHandle(index) {
@@ -179,9 +204,11 @@ export default {
             const data = await Promise.all(getFriendsChatPromises)
             for (let i = 0; i < data.length; i++) {
                 this.notifyNumber.push(0)
+                this.lastMessages.push({})
             }
 
             this.friendsChat = data
+            await this.loadPreviewLastMessage()
 
             // lắng nghe dữ liệu trả về từ socket
             this.receiveMessage()
@@ -207,7 +234,8 @@ export default {
 
         <div ref='model' class="model hide">
             <div class="background" @click="hideModel"></div>
-            <AccountList class="account-list" :pAccounts="findAccounts" @selectAccount="selectAccountHandle"></AccountList>
+            <AccountList class="account-list" :pAccounts="findAccounts" @selectAccount="selectAccountHandle">
+            </AccountList>
         </div>
 
         <div class="sidebar">
@@ -220,11 +248,17 @@ export default {
             </div>
 
             <ul class="friend-chat-list">
-                <li class="friend-chat" v-for="(friend, index) in friendsChat" @click="setSelectFriendIndex(index)">
+                <li class="friend-chat" v-for="(friend, index) in friendsChat" :key="index" @click="setSelectFriendIndex(index)">
                     <img class="avatar" :src="friend.avatar">
                     <div class="info">
                         <p class="name">{{ friend.lastName + ' ' + friend.firstName }}</p>
-                        <!-- <p class="text">friend chat text </p> -->
+                        <template v-if="index < lastMessages.length && lastMessages[index] !== undefined">
+                            <p class="text">
+                                <span v-if="lastMessages[index].sender == accountLogin._id">Bạn: </span> 
+                                {{ lastMessages[index].content.text }}                            
+                            </p>
+                            <p class="time">{{ new Date(lastMessages[index].timeSend).toLocaleString() }}</p>
+                        </template>
                         <div class="notify-number" v-if="notifyNumber[index] != 0">{{ notifyNumber[index] }}</div>
                     </div>
                 </li>
@@ -249,12 +283,12 @@ export default {
 
                     <template v-if="message.sender === accountLogin._id">
                         <img class="avatar" :src="accountLogin.avatar">
-                        <p class="message" :title="getTime(message.timeSend) ">{{ message.content.text }}</p>
+                        <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
                     </template>
 
                     <template v-else>
                         <img class="avatar" :src="selectFriend.avatar">
-                        <p class="message" :title="getTime(message.timeSend)">{{ message.content.text }}</p>
+                        <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
                     </template>
                 </div>
 
@@ -335,7 +369,7 @@ export default {
 
 // ======================= public style =======================
 img.avatar {
-    --avatar-size: 50px;
+    --avatar-size: 54px;
     width: var(--avatar-size);
     height: var(--avatar-size);
     border-radius: 50%;
@@ -437,7 +471,11 @@ img.avatar {
                     -webkit-box-orient: vertical;
                 }
 
-                .notify-number {                    
+                .time {
+                    opacity: .6;                    
+                }
+
+                .notify-number {
                     border-radius: 50%;
                     width: 24px;
                     height: 24px;
@@ -507,14 +545,21 @@ img.avatar {
             width: 66%;
             margin-top: 4px;
 
+            &.right+.right .avatar,
+            &.left+.left .avatar {
+                opacity: 0;
+            }
+
+            
             &.right {
                 margin-left: auto;
                 flex-direction: row-reverse;
             }
 
-            &.right+.right .avatar,
-            &.left+.left .avatar {
-                opacity: 0;
+            &.left {
+                .message {
+                    background-color: lightgray;
+                }
             }
 
             .avatar {

@@ -5,7 +5,7 @@ const router = express.Router()
 
 // route: /api/message/
 router.route('/')
-    .get(messageController.findAll)    
+    .get(messageController.findAll)
     .post(messageController.create)
     .delete(async (req, res, next) => {
         try {
@@ -34,5 +34,12 @@ router.route('/acc/:id1/:id2')
 router.route('/:id/friends')
     .get(messageController.getFriendsChat)
 
+// route: /api/message/last/accounts
+router.route('/last/accounts')
+    .get(messageController.getLastMessageOfAllUsers)
+
+// route: /api/message/last/acc/:id
+router.route('/last/acc/:id')
+    .get(messageController.getAllLastMessOfUserToFriends)
 
 module.exports = router

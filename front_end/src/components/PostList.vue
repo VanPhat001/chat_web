@@ -1,5 +1,7 @@
 <template>
-    <div class="post-list" ref="post-list">
+    <div class="post-list">
+
+        <div ref="hidden-item" style="height: 0;"></div>
 
         <template v-for="post in posts">
             <PostComponent :pPost="post"></PostComponent>
@@ -35,7 +37,7 @@ export default {
 
     methods: {
         scrollToTop() {
-            const el = this.$refs['post-list']
+            const el = this.$refs['hidden-item']
             el.scrollIntoView({ behavior: "smooth", inline: "nearest" });
         }
     },
@@ -50,9 +52,15 @@ export default {
 
 
 <style lang="scss" scoped>
+.post-list {
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
 .post-component {
     margin: 20px auto 0;
-    width: 600px;
+    width: 600px;    
 }
 
 .btn-fixed {

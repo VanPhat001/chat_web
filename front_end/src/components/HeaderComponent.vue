@@ -72,6 +72,8 @@ export default {
         .name {
             display: inline-block;
             line-height: var(--img-size);
+            font-weight: bold;
+            margin-right: 5px;
         }
 
         img {
