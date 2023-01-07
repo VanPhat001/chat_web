@@ -1,6 +1,6 @@
 <script>
 import accountService from '../services/account.service'
-import {mapMutations, mapActions} from 'vuex';
+import { mapMutations, mapActions } from 'vuex';
 export default {
     data() {
         return {
@@ -10,23 +10,28 @@ export default {
     },
     methods: {
         ...mapMutations(['setAccount']),
-        ...mapActions(['connectSocket']),
+        ...mapActions(['connectSocket', 'userOnline']),
         async login() {
             try {
-                const account = await accountService.findByUsernameAndPassword(this.username, this.password)  
-                
+                const account = await accountService.findByUsernameAndPassword(this.username, this.password)
+
                 const NOT_FOUND = ''
                 if (account === NOT_FOUND) {
                     alert('Tài khoản hoặc mật khẩu không hợp lệ!')
                 }
                 else {
                     this.setAccount(account)
-                    // alert('Đăng nhập thành công!')
-                    this.$router.push('/posts')
 
                     this.connectSocket()
-                } 
-                
+
+                    // await accountService.updateById(account._id, { timeLastActive: null })
+                    // account.timeLastActive = null
+                    await this.userOnline()
+                    
+                    // alert('Đăng nhập thành công!')
+                    this.$router.push('/posts')
+                }
+
             } catch (error) {
                 console.log(error);
             }
@@ -50,7 +55,7 @@ export default {
                     <label for="login-username">Username: </label>
                 </td>
                 <td>
-                    <input id="login-username" type="text" v-model="username"> 
+                    <input id="login-username" type="text" v-model="username">
                 </td>
             </tr>
             <tr>

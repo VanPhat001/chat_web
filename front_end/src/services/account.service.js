@@ -23,6 +23,21 @@ class AccountService {
         return (await this.api.get(`/account/text/${text}`)).data
     }
 
+    async updateById(accountId, { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar }) {
+        // [PATCH] /api/account/:id
+        return (await this.api.patch(`/account/${accountId}`, {
+            username: username,
+            password: password,
+            timeLastActive: timeLastActive,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            gender: gender,
+            address: address,
+            avatar: avatar
+        })).data
+    }
+
 }
 
 export default (new AccountService())

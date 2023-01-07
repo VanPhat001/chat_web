@@ -23,6 +23,7 @@
 
 
 <script>
+import { mapActions } from 'vuex'
 export default {
     computed: {
         loginAccount() {
@@ -33,11 +34,12 @@ export default {
         }
     },
     methods: {
-        logOutAccount() {
-            this.$store.state.account = null
-
+        ...mapActions(['userOffline']),
+        async logOutAccount() {
             this.$store.state.socket.disconnect()
             this.$store.state.socket = null
+
+            await this.userOffline()
 
             this.$router.push('/login')
         }
@@ -56,8 +58,9 @@ export default {
     align-items: center;
 
     .left {
-        .fa-house, 
-        .fa-message, 
+
+        .fa-house,
+        .fa-message,
         .fa-right-from-bracket {
             padding: 6px;
             font-size: 18px;

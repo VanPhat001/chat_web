@@ -9,7 +9,7 @@ export default {
     },
     data() {
         return {
-            friendsChat: [],
+            friendsChatId: [],
             notifyNumber: [],
             selectFriendIndex: 0,
             messages: [],
@@ -24,15 +24,22 @@ export default {
     computed: {
         ...mapGetters(['account']),
         selectFriend() {
-            return this.friendsChat[this.selectFriendIndex]
+            return this.getAccount(this.friendsChatId[this.selectFriendIndex])
         },
         accountLogin() {
             return this.account
+        },
+        accountMap() {
+            return this.$store.state.accountMap
         }
     },
 
     methods: {
         ...mapActions(['socketSendMessageToFriendChat']),
+
+        getAccount(accId) {
+            return this.accountMap.get(accId)
+        },
 
         async setSelectFriendIndex(index) {
             this.selectFriendIndex = index
@@ -117,11 +124,12 @@ export default {
                         // sender không có trong friendsChat
                         // ---> thêm account bên sidebar và hiện notify có tin nhắn mới
 
-                        const indexFound = this.friendsChat.findIndex(acc => acc._id == friendChat._id)
+                        const indexFound = this.friendsChatId.findIndex(accId => accId == friendChat._id)
                         const NOT_FOUND = -1
 
                         if (indexFound === NOT_FOUND) {
-                            this.friendsChat.push(friendChat)
+                            this.friendsChatId.push(friendChat._id)
+                            this.accountMap(friendChat._id, friendChat)
                             this.notifyNumber.push(1)
                         }
                         else {
@@ -151,8 +159,8 @@ export default {
             })
 
             const data = []
-            this.friendsChat.forEach(friend => {
-                data.push(map.get(friend._id))
+            this.friendsChatId.forEach(friendId => {
+                data.push(map.get(friendId))
             })
 
             this.lastMessages = data
@@ -166,11 +174,12 @@ export default {
         selectAccountHandle(index) {
             const account = this.findAccounts[index]
 
-            const result = this.friendsChat.find(friend => friend._id == account._id)
+            const result = this.friendsChatId.find(friendId => friendId == account._id)
             const NOT_FOUND = undefined
 
             if (result === NOT_FOUND) {
-                this.friendsChat.push(account)
+                this.friendsChatId.push(account._id)
+                this.accountMap.set(account._id, account)
             }
 
             this.hideModel()
@@ -192,22 +201,29 @@ export default {
         const accountId = this.account._id
         try {
             // get friends chat id array ===> [ accountId ]
-            const friendsChat = await messageService.getFriendsChat(accountId)
-            console.log(friendsChat);
+            const friendsChatIdData = await messageService.getFriendsChat(accountId)
+            console.log(friendsChatIdData);
 
             // fetch api to get friends chat account  ===> [ {_id, username, password...} ]
             const getFriendsChatPromises = []
-            friendsChat.forEach(friendId => {
-                getFriendsChatPromises.push(accountService.getById(friendId))
+            friendsChatIdData.forEach(friendId => {
+                if (!this.accountMap.has(friendId)) {
+                    getFriendsChatPromises.push(accountService.getById(friendId))
+                }
             })
 
             const data = await Promise.all(getFriendsChatPromises)
             for (let i = 0; i < data.length; i++) {
+                const acc = data[i]
+                this.accountMap.set(acc._id, acc)
+            }
+
+            for (let i = 0; i < friendsChatIdData.length; i++) {
                 this.notifyNumber.push(0)
                 this.lastMessages.push({})
             }
 
-            this.friendsChat = data
+            this.friendsChatId = friendsChatIdData
             await this.loadPreviewLastMessage()
 
             // lắng nghe dữ liệu trả về từ socket
@@ -248,14 +264,19 @@ export default {
             </div>
 
             <ul class="friend-chat-list">
-                <li class="friend-chat" v-for="(friend, index) in friendsChat" :key="index" @click="setSelectFriendIndex(index)">
-                    <img class="avatar" :src="friend.avatar">
+                <li class="friend-chat" v-for="(friendId, index) in friendsChatId" :key="index"
+                    @click="setSelectFriendIndex(index)">
+                    <span class="avatar-box">
+                        <img class="avatar" :src="getAccount(friendId).avatar">
+                        <div v-show="getAccount(friendId).timeLastActive === null" class="active"></div>
+                    </span>
                     <div class="info">
-                        <p class="name">{{ friend.lastName + ' ' + friend.firstName }}</p>
-                        <template v-if="index < lastMessages.length && lastMessages[index] !== undefined">
+                        <p class="name">{{ getAccount(friendId).lastName + ' ' + getAccount(friendId).firstName }}</p>
+                        <template
+                            v-if="index < lastMessages.length && lastMessages[index] !== undefined && lastMessages[index].content">
                             <p class="text">
-                                <span v-if="lastMessages[index].sender == accountLogin._id">Bạn: </span> 
-                                {{ lastMessages[index].content.text }}                            
+                                <span v-if="lastMessages[index].sender == accountLogin._id">Bạn: </span>
+                                {{ lastMessages[index].content.text }}
                             </p>
                             <p class="time">{{ new Date(lastMessages[index].timeSend).toLocaleString() }}</p>
                         </template>
@@ -267,7 +288,7 @@ export default {
 
         <div class="main-box">
             <div class="receipient-bar">
-                <template v-if="selectFriendIndex < friendsChat.length">
+                <template v-if="selectFriendIndex < friendsChatId.length">
                     <img class="avatar" :src="selectFriend.avatar">
                     <p class="name">{{ `${selectFriend.lastName} ${selectFriend.firstName}` }}</p>
 
@@ -446,8 +467,23 @@ img.avatar {
                 cursor: pointer;
             }
 
-            .avatar {
-                margin: 0 8px;
+
+            .avatar-box {
+                position: relative;
+
+                .avatar {
+                    margin: 0 8px;
+                }
+
+                .active {
+                    position: absolute;
+                    bottom: 3px;
+                    right: 8px;
+                    width: 16px;
+                    height: 16px;
+                    background-color: rgba(70, 236, 84, 0.842);
+                    border-radius: 50%;
+                }
             }
 
             .info {
@@ -472,7 +508,7 @@ img.avatar {
                 }
 
                 .time {
-                    opacity: .6;                    
+                    opacity: .6;
                 }
 
                 .notify-number {
@@ -550,7 +586,7 @@ img.avatar {
                 opacity: 0;
             }
 
-            
+
             &.right {
                 margin-left: auto;
                 flex-direction: row-reverse;

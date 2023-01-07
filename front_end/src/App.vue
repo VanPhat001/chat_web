@@ -21,10 +21,27 @@ main {
 </style>
 
 <script>
-import HeaderComponent from './components/HeaderComponent.vue';
+import HeaderComponent from './components/HeaderComponent.vue'
+import { mapActions } from 'vuex'
 export default {
 	components: {
 		HeaderComponent
+	},
+	methods: {
+		...mapActions(['userOffline'])
+	},
+	mounted() {
+		// tab đóng thì gửi dữ liệu user offline lên cho server
+		window.addEventListener('beforeunload', async () => {
+			await this.userOffline()
+		})
+		// !FIXME: nhưng window đóng thì lại không gửi được
+		// window.addEventListener('close', async () => {
+		// 	await this.userOffline()
+		// })
+	},
+	async unmounted() {
+		await this.userOffline()
 	}
 }
 </script>

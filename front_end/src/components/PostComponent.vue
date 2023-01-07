@@ -62,7 +62,7 @@
 
 <style lang="scss" scoped>
 .color-red {
-    color: red;
+    color: rgb(211, 31, 31);
 }
 
 .card {
@@ -371,7 +371,7 @@ export default {
             this.updateTime()
             this.intervalId = setInterval(() => {
                 this.updateTime()
-            }, this.constants.MINUTE);
+            }, 20000);
 
         } catch (error) {
             console.log(error)

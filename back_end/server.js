@@ -23,7 +23,7 @@ io.on('connection', socket => {
 
 
         io.to(receipient).emit('receive-message-from-friend-chat', message)
-        console.log('>> send data to other client in room-chat')
+        console.log(`>> send data to client ${receipient} in room-chat`)
     })
 })
 
