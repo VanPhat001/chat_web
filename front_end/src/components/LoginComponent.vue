@@ -29,7 +29,7 @@ export default {
                     await this.userOnline()
                     
                     // alert('Đăng nhập thành công!')
-                    this.$router.push('/posts')
+                    this.$router.push('/home')
                 }
 
             } catch (error) {

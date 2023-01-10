@@ -5,16 +5,14 @@
             <div class="card-header">
                 <img class="avatar" :src="author.avatar">
                 <div class="info">
-                    <p class="name">{{ fullName(author) }}</p>
+                    <router-link class="name" :to="`/profile/${author._id}`">{{ fullName(author) }}</router-link>
                     <p ref="count-time" class="count-time">{{ 'vừa xong' }}</p>
                 </div>
             </div>
             <div class="card-body">
                 <div class="content">
                     <p class="content-text">{{ post.content.text }}</p>
-                    <img class="content-image"
-                        v-if="post.content.image !== null"
-                        :src="post.content.image">
+                    <img class="content-image" v-if="post.content.image !== null" :src="post.content.image">
                 </div>
 
                 <div class="controls">
@@ -34,7 +32,9 @@
                         <img class="avatar" :src="getAccountMap(comment.accountId).avatar">
 
                         <div class="info">
-                            <p class="name">{{ fullName(getAccountMap(comment.accountId)) }}</p>
+                            <router-link class="name" :to="`/profile/${comment.accountId}`">
+                                {{ fullName(getAccountMap(comment.accountId)) }}
+                            </router-link>
                             <p class="content-text">{{ comment.text }}</p>
                         </div>
                     </li>

@@ -38,6 +38,10 @@ class AccountService {
         })).data
     }
 
+    async suggestAccount(accId) {
+        // [GET] /api/account/:id/suggest
+        return (await this.api.get(`/account/${accId}/suggest`)).data
+    }
 }
 
 export default (new AccountService())

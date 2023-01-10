@@ -29,7 +29,7 @@ export default {
                 })
                 
                 alert('ok')
-                this.$router.push('/posts')
+                this.$router.push('/home')
             } catch (error) {
                 console.log(error);
                 alert('error')

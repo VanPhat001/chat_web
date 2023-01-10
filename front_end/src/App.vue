@@ -1,7 +1,7 @@
 <template>
 	<!-- <router-link to="/chat-room">goto chat room</router-link> -->
 
-	<header v-if="$route.path !== '/' && $route.path !== '/login'">
+	<header v-if="$route.path != '/' && $route.path != '/login'">
 		<HeaderComponent></HeaderComponent>
 	</header>
 

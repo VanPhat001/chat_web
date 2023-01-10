@@ -8,12 +8,25 @@ class PostService {
 
     // get all
     async getAll() {
-        return await this.Post.find({}).toArray()
+        const data = await this.Post
+                        .find({})
+                        .sort({ timePost: -1 })
+                        .toArray()
+        return data
     }
 
     // get by id
     async getById(id) {
         return await this.Post.findOne({ _id: ObjectId(id) })
+    }
+
+    // get by author
+    async getByAuthor(author) {
+        const data = await this.Post
+                        .find({ author: author })
+                        .sort({ timePost: -1 })
+                        .toArray()
+        return data
     }
 
     // create post

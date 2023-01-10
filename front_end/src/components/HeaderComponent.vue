@@ -1,23 +1,27 @@
 <template>
     <div class="header-component">
         <div class="left">
-            <router-link to="/posts">
-                <i class="fa-solid fa-house"></i>
+            <router-link to="/home" title="goto home">
+                <i class="fa-solid fa-house router-link-ico"></i>
             </router-link>
 
-            <router-link to="/chat-room">
-                <i class="fa-regular fa-message"></i>
+            <router-link to="/contact-book" title="goto contact book">
+                <i class="fa-solid fa-address-book router-link-ico"></i>
             </router-link>
 
-            <span @click="logOutAccount">
+            <router-link to="/chat-room" title="goto chat room">
+                <i class="fa-regular fa-message router-link-ico"></i>
+            </router-link>
+
+            <span @click="logOutAccount" title="log out">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </span>
         </div>
 
-        <div class="right">
+        <router-link class="right" :to="`/profile/${loginAccount._id}`">
             <p class="name">{{ fullName }}</p>
             <img :src="loginAccount.avatar">
-        </div>
+        </router-link>
     </div>
 </template>
 
@@ -42,6 +46,7 @@ export default {
             await this.userOffline()
 
             this.$router.push('/login')
+            // window.open('/login', '_self')
         }
     }
 }
@@ -59,8 +64,7 @@ export default {
 
     .left {
 
-        .fa-house,
-        .fa-message,
+        .router-link-ico,
         .fa-right-from-bracket {
             padding: 6px;
             font-size: 18px;

@@ -109,9 +109,12 @@ export default {
                     const message = receiveMessageQueue.shift()
 
                     if (message.sender === this.accountLogin._id) {
+                        // BÊN NGƯỜI GỬI TIN NHẮN
                         // thay đổi trạng thái đã gửi thành đã nhận 
                     }
                     else if (message.sender === this.selectFriend?._id) {
+                        // BÊN NGƯỜI NHẬN TIN NHẮN, CHAT-ROOM ĐANG HIỂN THỊ TIN NHẮN VỚI NGƯỜI GỬI
+                        // hiển thị tin nhắn vừa gửi trên giao diện
                         this.messages.push(message)
                         await this.loadPreviewLastMessage()
                     }
@@ -129,7 +132,7 @@ export default {
 
                         if (indexFound === NOT_FOUND) {
                             this.friendsChatId.push(friendChat._id)
-                            this.accountMap(friendChat._id, friendChat)
+                            this.accountMap.set(friendChat._id, friendChat)
                             this.notifyNumber.push(1)
                         }
                         else {
@@ -292,9 +295,9 @@ export default {
                     <img class="avatar" :src="selectFriend.avatar">
                     <p class="name">{{ `${selectFriend.lastName} ${selectFriend.firstName}` }}</p>
 
-                    <div class="btn btn-info">
+                    <router-link class="btn btn-info" :to="`/profile/${selectFriend._id}`">
                         <i class="fa-solid fa-info"></i>
-                    </div>
+                    </router-link>
                 </template>
             </div>
 

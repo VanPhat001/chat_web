@@ -49,7 +49,7 @@ exports.getAllFriendsOfAccount = async (req, res, next) => {
     const friendService = new FriendService()
 
     const accId = req.params.id
-    const friendsData = await friendService.getByAccountId(accId)
+    const friendsData = await friendService.getByAccountId(accId, true)
 
     const friends = []
     friendsData.forEach(friend => {

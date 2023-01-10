@@ -2,8 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import EmptyComponent from '../components/EmptyComponent.vue';
 import ChatRoom from '../components/ChatRoom.vue';
 import LoginComponent from '../components/LoginComponent.vue';
-import PostList from '../components/PostList.vue';
+import Home from '../components/Home.vue';
 import CreatePost from '../components/CreatePost.vue';
+import Profile from '../components/Profile.vue';
+import ContactBook from '../components/ContactBook.vue';
 
 
 const routes = [
@@ -17,10 +19,16 @@ const routes = [
         path: '/chat-room', component: ChatRoom
     },
     {
-        path: '/posts', component: PostList
+        path: '/home', component: Home
     },
     {
         path: '/create-post', component: CreatePost
+    },
+    {
+        path: '/profile/:id', component: Profile
+    },
+    {
+        path: '/contact-book', component: ContactBook
     }
 ]
 

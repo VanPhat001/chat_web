@@ -50,7 +50,7 @@ const actions = {
 
         context.state.accountMap_intervalId = setInterval(() => {
             context.dispatch('fetchAccountMap')
-        }, 16000);
+        }, 20000);
     },
 
     async userOffline(context) {
