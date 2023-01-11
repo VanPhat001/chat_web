@@ -1,3 +1,4 @@
+const { response } = require('express')
 const express = require('express')
 const router = express.Router()
 
@@ -65,7 +66,7 @@ router.route('/acc1/:accountId1/acc2/:accountId2')
                     }
                 ]
             })
-            
+
             console.log('>> get friend by accountId1 & accountId2');
             res.send(data)
         } catch (error) {
@@ -97,6 +98,50 @@ router.route('/request-to/:id')
         }
     })
 
+// route: /api/friend/mutual-friends/:accId1/:accId2
+router.route('/mutual-friends/:accId1/:accId2')
+    .get(async (req, res, next) => {
+        try {
+            const friendService = new FriendService()
+            const { accId1, accId2 } = req.params
+
+            let promises = Promise.all([
+                friendService.getByAccountId(accId1, true),
+                friendService.getByAccountId(accId2, true)
+            ])
+            const [friendObjOfAcc1, friendObjOfAcc2] = await promises
+
+            const getFriends = async function (friendObj, accId) {
+                const friendList = []
+                friendObj.forEach(({ accountId1, accountId2 }) => {
+                    friendList.push(
+                        accountId1 == accId ? accountId2 : accountId1
+                    )
+                })
+                return friendList
+            }
+
+            promises = Promise.all([
+                getFriends(friendObjOfAcc1, accId1),
+                getFriends(friendObjOfAcc2, accId2)
+            ])
+            const [friendOfAcc1, friendOfAcc2] = await promises
+
+            const set = new Set(friendOfAcc1)
+            const result = []
+            friendOfAcc2.forEach(accId => {
+                if (set.has(accId)) {
+                    result.push(accId)
+                }
+            })
+
+            console.log('>> get mutual friends');
+            res.send(result)
+
+        } catch (error) {
+            next(error)
+        }
+    })
 
 
 module.exports = router

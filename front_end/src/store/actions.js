@@ -62,6 +62,22 @@ const actions = {
 
         await accountService.updateById(user._id, { timeLastActive: new Date() })
         context.state.accountMap.clear()
+    },
+
+    async pushToAccountMap({ state }, accIdArray) {
+        const accountMap = state.accountMap
+
+        const accountPromises = []
+        accIdArray.forEach(accId => {
+            if (!accountMap.has(accId)) {
+                accountPromises.push( accountService.getById(accId) )
+            }
+        })
+
+        const accounts = await Promise.all(accountPromises)
+        accounts.forEach(account => {
+            accountMap.set(account._id, account)
+        })
     }
 }
 

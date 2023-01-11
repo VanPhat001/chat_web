@@ -5,7 +5,8 @@
 
         <h1>Lời mời kết bạn</h1>
         <div class="list add-friend-request-list">
-            <div class="row add-friend-request" v-for="(request, index) in addFriendRequest" :key="index">
+            <router-link class="row add-friend-request" v-for="(request, index) in addFriendRequest" :key="index"
+                :to="`/profile/${request}`">
                 <div class="left">
                     <img class="avatar" :src="getAccount(request).avatar">
                 </div>
@@ -14,7 +15,7 @@
                     <button class="btn" @click.prevent="acceptRequest(index)">Đồng ý</button>
                     <button class="btn" @click.prevent="cancelRequest(index)">Hủy</button>
                 </div>
-            </div>
+            </router-link>
         </div>
 
         <h1 style="margin-top: 30px;">Gợi ý</h1>

@@ -54,7 +54,7 @@ router.route('/:id/suggest')
 
         // data = [ friendObject ] = [ {accountId1, accountId2}, {}, {}...]
         const data = await friendService.getByAccountId(userId, true)
-        const result = []
+        const result = new Set()
 
         if (data.length == 0) {
             const AccountService = require('../services/account.service')
@@ -68,7 +68,7 @@ router.route('/:id/suggest')
             }).limit(12).toArray()
 
             data2.forEach(acc => {
-                result.push(acc._id)
+                result.add(acc._id)
             })
         }
         else {
@@ -88,19 +88,19 @@ router.route('/:id/suggest')
 
                 if (set.has(accountId1)) {
                     if (!set.has(accountId2)) {
-                        result.push(accountId2)
+                        result.add(accountId2)
                     }
                 }
                 else {
                     if (!set.has(accountId1)) {
-                        result.push(accountId1)
+                        result.add(accountId1)
                     }
                 }
             })
         }
 
         console.log('>> suggest accounts')
-        res.send(result)
+        res.send([...result])
 
     })
 

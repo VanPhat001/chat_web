@@ -50,6 +50,11 @@ class FriendService {
             isAccept: isAccept
         })).data
     }
+
+    async getMutualFriends(accountId1, accountId2) {
+        // [GET] /api/friend/mutual-friends/:accId1/:accId2
+        return (await this.api.get(`/friend/mutual-friends/${accountId1}/${accountId2}`)).data
+    }
 }
 
 export default new FriendService()
