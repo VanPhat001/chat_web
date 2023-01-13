@@ -1,6 +1,5 @@
 <template>
 	<!-- <router-link to="/chat-room">goto chat room</router-link> -->
-
 	<header v-if="$route.path != '/' && $route.path != '/login'">
 		<HeaderComponent></HeaderComponent>
 	</header>
@@ -13,6 +12,7 @@
 <style lang="scss">
 header {
 	height: 50px;
+	background-color: #fff;
 }
 
 main {
@@ -22,10 +22,13 @@ main {
 
 <script>
 import HeaderComponent from './components/HeaderComponent.vue'
+import LoaddingComponent from './components/LoaddingComponent.vue';
+
 import { mapActions } from 'vuex'
 export default {
 	components: {
-		HeaderComponent
+		HeaderComponent,
+		LoaddingComponent
 	},
 	methods: {
 		...mapActions(['userOffline'])

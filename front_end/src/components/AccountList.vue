@@ -12,6 +12,7 @@
 
 <script>
 export default {
+    emits: ['loaded'],
     props: {
         pAccounts: { type: Array, default: [] }
     },
@@ -27,6 +28,9 @@ export default {
         selectAccount(index) {
             this.$emit('selectAccount', index)
         }
+    },
+    mounted() {
+        this.$emit('loaded')
     },
     watch: {
         pAccounts() {

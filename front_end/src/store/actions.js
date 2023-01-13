@@ -42,6 +42,9 @@ const actions = {
     },
 
     async userOnline(context) {
+        // xem xét lại dòng này, có khả năng dữ liệu trong accountMap còn dùng được
+        context.state.accountMap.clear()
+
         const user = context.state.account
         console.log('>> user online', user)
 
@@ -61,7 +64,6 @@ const actions = {
         context.state.accountMap_intervalId = null
 
         await accountService.updateById(user._id, { timeLastActive: new Date() })
-        context.state.accountMap.clear()
     },
 
     async pushToAccountMap({ state }, accIdArray) {
@@ -70,7 +72,7 @@ const actions = {
         const accountPromises = []
         accIdArray.forEach(accId => {
             if (!accountMap.has(accId)) {
-                accountPromises.push( accountService.getById(accId) )
+                accountPromises.push(accountService.getById(accId))
             }
         })
 
@@ -78,7 +80,7 @@ const actions = {
         accounts.forEach(account => {
             accountMap.set(account._id, account)
         })
-    }
+    },
 }
 
 export default actions

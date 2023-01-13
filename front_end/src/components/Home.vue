@@ -1,19 +1,41 @@
 <template>
     <div class="home">
-        <FriendList class="friend-list"></FriendList>
-        <PostList class="post-list"></PostList>
+        <LoaddingComponent></LoaddingComponent>
+        <FriendList class="friend-list" @loaded="incCounter"></FriendList>
+        <PostList class="post-list" @loaded="incCounter"></PostList>
     </div>
 </template>
 
 
 <script>
 import FriendList from './FriendList.vue'
+import LoaddingComponent from './LoaddingComponent.vue';
 import PostList from './PostList.vue';
 
 export default {
     components: {
         FriendList,
-        PostList
+        PostList,
+        LoaddingComponent
+    },
+    data() {
+        return {
+            loadedCounter: 0
+        }
+    },
+    methods: {
+        incCounter() {
+            this.loadedCounter++
+
+            if (this.loadedCounter == 2) {
+                try {
+                    const loadding = document.querySelector('.loadding-component')
+                    loadding.remove()
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+        }
     }
 }
 </script>
@@ -31,7 +53,7 @@ export default {
     .post-list {
         padding-left: var(--friend-list-width);
 
-        
+
         /* width */
         &::-webkit-scrollbar {
             width: 10px;

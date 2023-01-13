@@ -69,7 +69,7 @@
     width: 100%;
     padding: 16px;
     border-radius: 7px;
-    background-color: rgba(140, 155, 165, 0.247);
+    background-color: #fff;
 
     &-header {
         display: flex;
@@ -223,11 +223,16 @@ export default {
         return {
             author: {},
             intervalId: null,
-            constants: {
+            constants: Object.freeze({
                 MINUTE: 60000,
                 HOUR: 60 * 60000,
                 DAY: 24 * 60 * 60000,
+                MONTH: 30 * 24 * 60 * 60000,
                 data: [
+                    {
+                        value: 30 * 24 * 60 * 60000,
+                        suffix: 'tháng trước'
+                    },
                     {
                         value: 24 * 60 * 60000,
                         suffix: 'ngày trước'
@@ -241,7 +246,7 @@ export default {
                         suffix: 'phút trước'
                     },
                 ]
-            },
+            }),
             comments: [],
             commentText: ''
         }

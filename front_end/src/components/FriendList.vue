@@ -23,6 +23,8 @@ import accountService from '../services/account.service'
 import friendService from '../services/friend.service'
 
 export default {
+    emits: ['loaded'],
+
     data() {
         return {
             friends: []
@@ -62,6 +64,7 @@ export default {
         })
 
         this.friends = friendsData
+        this.$emit('loaded')
     },
 
     mounted() {
@@ -83,6 +86,7 @@ export default {
     left: 0;
     overflow-y: auto;
     width: var(--friend-list-width);
+    background-color: #fff;
 
 
     .friend {

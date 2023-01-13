@@ -1,5 +1,7 @@
 <template>
     <div class="profile">
+        <LoaddingComponent></LoaddingComponent>
+
         <!-- <h1>profile</h1>
         <p>{{ userProfile }}</p> -->
 
@@ -16,9 +18,17 @@
                         </router-link>
                     </div>
                     <template v-if="profileType !== ROLE.USER">
-                        <button class="btn btn-friend" @click="clickHandle" v-if="profileType === ROLE.FRIEND">
+                        <button class="btn btn-friend dropdown-box" v-if="profileType === ROLE.FRIEND">
                             <i class="fa-solid fa-user-check"></i>
                             Bạn bè
+
+                            <DropdownComponent class="dropdown-component dropdown">
+                                <button class="btn" @click="cancelAddFriendRequest">
+                                    <i class="fa-solid fa-user-minus"></i>
+                                    Hủy kết bạn
+                                </button>
+                            </DropdownComponent>
+
                         </button>
                         <button class="btn btn-cancel-request" @click="cancelAddFriendRequest"
                             v-if="profileType === ROLE.REQUEST">
@@ -44,21 +54,24 @@
             </div>
         </div>
 
-        <PostList :pUserId="$route.params.id"></PostList>
+        <PostList :pUserId="$route.params.id" @loaded="incCounter"></PostList>
 
     </div>
 </template>
 
 <script>
-import accountService from '../services/account.service'
 import friendService from '../services/friend.service'
 import PostList from './PostList.vue'
+import DropdownComponent from './DropdownComponent.vue'
+import LoaddingComponent from './LoaddingComponent.vue'
 import { mapActions } from 'vuex'
 
 
 export default {
     components: {
-        PostList
+        PostList,
+        DropdownComponent,
+        LoaddingComponent
     },
     computed: {
         userLogin() {
@@ -80,11 +93,18 @@ export default {
                 REQUESTED: 'requested',
                 OTHER: 'other'
             }),
-            profileType: 'user'
+            profileType: 'user',
+            loadedCounter: 0
         }
     },
     methods: {
         ...mapActions(['pushToAccountMap']),
+        incCounter() {
+            this.loadedCounter++
+
+            const loadding = document.querySelector('.loadding-component')
+            loadding?.remove()
+        },
         fullName(account) {
             if (account)
                 return `${account.lastName} ${account.firstName}`
@@ -170,15 +190,45 @@ export default {
 
         this.userProfile = accountMap.get(id)
         this.mutualFriends = mutualFriends
+        this.incCounter()
     }
 }
 </script>
 
 <style lang="scss" scoped>
+.dropdown-box {
+    position: relative;
+
+    &:hover {
+        .dropdown {
+            display: block;
+        }
+    }
+
+    .dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 1rem);
+        left: 10px;
+        cursor: auto;
+
+        box-shadow: 0 3px 10px grey;
+        width: 200px;
+        background-color: #fff;
+        --arrow-x: 10px;
+        --arrow-color: #fff;
+
+        button {
+            color: black;
+            width: 100%;
+        }
+    }
+}
+
 .user {
     display: flex;
     align-items: flex-end;
-    padding: 0 30px;
+    padding: 0 8%;
     margin-top: 20px;
 
     .avatar {

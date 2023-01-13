@@ -1,6 +1,5 @@
 <template>
     <div class="post-list">
-
         <div ref="hidden-item" style="height: 0;"></div>
 
         <template v-for="post in posts">
@@ -25,6 +24,8 @@
 import PostComponent from './PostComponent.vue'
 import postService from '../services/post.service'
 export default {
+    emits: ['loaded'],
+
     components: {
         PostComponent
     },
@@ -48,6 +49,7 @@ export default {
     methods: {
         scrollToTop() {
             const el = this.$refs['hidden-item']
+            console.log({ el });
             el.scrollIntoView({ behavior: "smooth", inline: "nearest" });
         },
     },
@@ -63,6 +65,8 @@ export default {
         } catch (error) {
             console.log(error)
         }
+
+        this.$emit('loaded')
     },
 }
 </script>

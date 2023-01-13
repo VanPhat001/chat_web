@@ -2,6 +2,7 @@
     <div class="contact-book">
         <!-- <h1>contact book page</h1> -->
         <!-- <p>{{ suggestAccountsId }}</p> -->
+        <LoaddingComponent></LoaddingComponent>
 
         <h1>Lời mời kết bạn</h1>
         <div class="list add-friend-request-list">
@@ -40,95 +41,86 @@
 <script>
 import accountService from '../services/account.service'
 import friendService from '../services/friend.service'
+import LoaddingComponent from './LoaddingComponent.vue'
 
 export default {
+    components: { LoaddingComponent },
     data() {
         return {
             suggestAccountsId: [],
             addFriendRequest: []
-        }
+        };
     },
-
     computed: {
         accountLogin() {
-            return this.$store.state.account
+            return this.$store.state.account;
         },
         accountMap() {
-            return this.$store.state.accountMap
+            return this.$store.state.accountMap;
         }
     },
-
     methods: {
         getAccount(accId) {
-            return this.accountMap.get(accId)
+            return this.accountMap.get(accId);
         },
         fullName(account) {
-            return `${account.lastName} ${account.firstName}`
+            return `${account.lastName} ${account.firstName}`;
         },
         async cancelRequest(index) {
             try {
-                console.log('cancelRequest')
-
-                const accId1 = this.addFriendRequest[index]
-                const accId2 = this.accountLogin._id
-
-                await friendService.deleteByAccount(accId1, accId2)
-                this.addFriendRequest.splice(index, 1)
-            } catch (error) {
-                console.log(error)
-                alert('Có lỗi xảy ra, hãy thực hiện thao tác này sau...')
+                console.log("cancelRequest");
+                const accId1 = this.addFriendRequest[index];
+                const accId2 = this.accountLogin._id;
+                await friendService.deleteByAccount(accId1, accId2);
+                this.addFriendRequest.splice(index, 1);
+            }
+            catch (error) {
+                console.log(error);
+                alert("Có lỗi xảy ra, hãy thực hiện thao tác này sau...");
             }
         },
         async acceptRequest(index) {
             try {
-                console.log('acceptRequest')
-
-                const accId1 = this.addFriendRequest[index]
-                const accId2 = this.accountLogin._id
-                const isAccept = true
-
-                await friendService.updateByAccount(accId1, accId2, isAccept)
-                this.addFriendRequest.splice(index, 1)
-            } catch (error) {
-                console.log(error)
-                alert('Có lỗi xảy ra, hãy thực hiện thao tác này sau...')
+                console.log("acceptRequest");
+                const accId1 = this.addFriendRequest[index];
+                const accId2 = this.accountLogin._id;
+                const isAccept = true;
+                await friendService.updateByAccount(accId1, accId2, isAccept);
+                this.addFriendRequest.splice(index, 1);
+            }
+            catch (error) {
+                console.log(error);
+                alert("Có lỗi xảy ra, hãy thực hiện thao tác này sau...");
             }
         },
         async sendAddFriendRequest(index) {
             try {
-                console.log('sendAddFriendRequest')
-
-                const accId1 = this.accountLogin._id
-                const accId2 = this.suggestAccountsId[index]
-                
+                console.log("sendAddFriendRequest");
+                const accId1 = this.accountLogin._id;
+                const accId2 = this.suggestAccountsId[index];
                 // [CHƯA LÀM] kiểm trac acc1 có gửi lời mời kết bạn cho acc2 chưa
                 // và acc2 có gửi cho acc1 chưa
                 //  - Nếu có lời mời rồi thì chuyển isAccept thành true
                 //  - Nếu chưa có lời mời thì tạo mới friendObj cho collection
-
-                await friendService.create(accId1, accId2)
-                this.suggestAccountsId.splice(index, 1)
-            } catch (error) {
-                console.log(error)
-                alert('Có lỗi xảy ra, hãy thực hiện thao tác này sau...')
+                await friendService.create(accId1, accId2);
+                this.suggestAccountsId.splice(index, 1);
+            }
+            catch (error) {
+                console.log(error);
+                alert("Có lỗi xảy ra, hãy thực hiện thao tác này sau...");
             }
         }
     },
-
     async created() {
-        const accId = this.accountLogin._id
-
+        const accId = this.accountLogin._id;
         // lấy thông tin những accId gửi lời mời kết bạn và thông tin accId gợi í kết bạn
         // 2 mảng này có khả năng có phần tử trùng nhau
         //#region
-        const [addFriendRequest, suggestAccountsId]
-            = await Promise.all([
-                friendService.getAllAddFriendRequest(accId),
-                accountService.suggestAccount(accId)
-            ])
+        const [addFriendRequest, suggestAccountsId] = await Promise.all([
+            friendService.getAllAddFriendRequest(accId),
+            accountService.suggestAccount(accId)
+        ]);
         //#endregion
-
-
         // loại bỏ phần tử trùng nhau của suggestAccountsId
         //#region
         const set = new Set(addFriendRequest)
@@ -142,9 +134,7 @@ export default {
             }
         }
         //#endregion
-
         console.log({ addFriendRequest, suggestAccountsId });
-
         // fetch dữ liệu account về và lưu trữ trong store
         //#region 
         const accountMap = this.accountMap // tham chiếu accountMap đến $store.state.accountMap
@@ -153,17 +143,17 @@ export default {
             if (!accountMap.has(accId)) {
                 tasks.push(accountService.getById(accId))
             }
-        })
-
+        });
         const accounts = await Promise.all(tasks)
-
         accounts.forEach(acc => {
             accountMap.set(acc._id, acc)
-        })
+        });
         //#endregion
-
         this.suggestAccountsId = suggestAccountsId
         this.addFriendRequest = addFriendRequest
+
+        const loadding = document.querySelector('.loadding-component')
+        loadding?.remove()
     },
 }
 </script>

@@ -1,11 +1,14 @@
 <script>
 import AccountList from './AccountList.vue';
+import LoaddingComponent from './LoaddingComponent.vue'
 import messageService from '../services/message.service'
 import accountService from '../services/account.service'
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex'
+import utils from '../utils'
+
 export default {
     components: {
-        AccountList
+        AccountList, LoaddingComponent
     },
     data() {
         return {
@@ -14,10 +17,12 @@ export default {
             selectFriendIndex: 0,
             messages: [],
             text: '',
-            intervalId: null,
             findAccountText: '',
             findAccounts: [],
-            lastMessages: []
+            lastMessages: [],
+            stopReceiveMessage: false,
+            loadedCounter: 0,
+            timeOutId: null
         }
     },
 
@@ -36,6 +41,19 @@ export default {
 
     methods: {
         ...mapActions(['socketSendMessageToFriendChat']),
+
+        incCounter() {
+            this.loadedCounter++
+
+            if (this.loadedCounter == 2) {
+                try {
+                    const loadding = document.querySelector('.loadding-component')
+                    loadding.remove()
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+        },
 
         getAccount(accId) {
             return this.accountMap.get(accId)
@@ -74,8 +92,14 @@ export default {
 
                 try {
                     const content = {
-                        text: this.text,
+                        text: null,
                         image: null
+                    }
+                    if (await utils.isImgUrl(this.text)) {
+                        content.image = this.text
+                    }
+                    else {
+                        content.text = this.text
                     }
 
                     const message = {
@@ -99,12 +123,15 @@ export default {
             }
         },
 
-        receiveMessage() {
-            this.intervalId = setInterval(async () => {
-                // listen message from socket and render layout
-                // REFERENCE receiveMessageQueue TO $store.state.receiveMessageQueue
-                const receiveMessageQueue = this.$store.state.receiveMessageQueue
+        async receiveMessage() {
+            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+            const receiveMessageQueue = this.$store.state.receiveMessageQueue
 
+            // console.log('>> start receive message');
+            while (!this.stopReceiveMessage) {
+
+                // duyệt qua toàn bộ mảng receiveMessageQueue, xử lí từng thông điệp và loại bỏ nó ra khỏi mảng
+                // sau khi làm xong thì nghỉ 1s và duyệt lại từ đầu
                 while (receiveMessageQueue.length > 0) {
                     const message = receiveMessageQueue.shift()
 
@@ -144,7 +171,9 @@ export default {
 
                 }
 
-            }, 1000);
+                await delay(1000)
+            }
+            // console.log('>> stop receive message');
         },
 
         async loadPreviewLastMessage() {
@@ -197,6 +226,22 @@ export default {
             } catch (error) {
                 console.log(error)
             }
+        },
+
+        debounce() {
+            clearTimeout(this.timeOutId)
+            this.timeOutId = setTimeout(async () => {
+                const isImage = await utils.isImgUrl(this.text)
+                if (isImage) {
+                    this.$refs['img'].height = 120
+                    this.$refs['img'].src = this.text
+                    this.scrollToLastMessage()
+                }
+                else {
+                    this.$refs['img'].height = 0
+                    this.$refs['img'].src = ''
+                }
+            }, 620)
         }
     },
 
@@ -234,6 +279,12 @@ export default {
         } catch (error) {
             console.log(error)
         }
+
+        this.incCounter()
+    },
+
+    mounted() {
+        this.scrollToLastMessage()
     },
 
     updated() {
@@ -241,7 +292,7 @@ export default {
     },
 
     unmounted() {
-        clearInterval(this.intervalId)
+        this.stopReceiveMessage = true        
     }
 }
 </script>
@@ -251,9 +302,12 @@ export default {
 <template >
     <div class="chat-room">
 
+        <LoaddingComponent></LoaddingComponent>
+
         <div ref='model' class="model hide">
             <div class="background" @click="hideModel"></div>
-            <AccountList class="account-list" :pAccounts="findAccounts" @selectAccount="selectAccountHandle">
+            <AccountList class="account-list" :pAccounts="findAccounts" @selectAccount="selectAccountHandle"
+                @loaded="incCounter">
             </AccountList>
         </div>
 
@@ -307,12 +361,23 @@ export default {
 
                     <template v-if="message.sender === accountLogin._id">
                         <img class="avatar" :src="accountLogin.avatar">
-                        <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                        <template v-if="message.content.text">
+                            <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                        </template>
+                        <template v-else>
+                            <img class="message" :src="message.content.image" alt="lỗi hiển thị">
+                        </template>
                     </template>
 
                     <template v-else>
                         <img class="avatar" :src="selectFriend.avatar">
-                        <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                        <template v-if="message.content.text">
+                            <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                        </template>
+                        <template v-else>
+                            <img class="message" :src="message.content.image" alt="lỗi hiển thị">
+                        </template>
+
                     </template>
                 </div>
 
@@ -320,9 +385,20 @@ export default {
             </div>
 
             <div class="messages-bar">
-                <!-- <input type="text" placeholder="enter text here"> -->
-                <textarea placeholder="enter text here" v-model="text" @keydown.enter.prevent="sendMessage"></textarea>
-                <button @click="sendMessage">send</button>
+                <div class="row">
+                    <div class="col">
+                        <img ref="img">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-fill">
+                        <textarea placeholder="enter text here" v-model="text" @keydown="debounce"
+                            @keydown.enter.prevent="sendMessage"></textarea>
+                    </div>
+                    <div class="col">
+                        <button @click="sendMessage">send</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -433,9 +509,14 @@ img.avatar {
         input {
             height: var(--find-friend-input-height);
             border-radius: var(--find-friend-input-height);
+            border: 1px solid lightgray;
             width: 100%;
             padding: 0 32px 0 12px;
             font-size: 16px;
+
+            &:focus {
+                border-color: #2a42ca;
+            }
         }
 
         button {
@@ -611,17 +692,29 @@ img.avatar {
                 border-radius: 5px;
                 padding: 3px 8px;
                 margin: 0 3px;
+                max-width: 75%;
             }
 
         }
     }
 
     .messages-bar {
-        height: 40px;
-        // padding-bottom: 10px;
-        display: flex;
+        .row {
+            display: flex;
 
-        input,
+            &>.col {
+                display: flex;
+
+                &.col-fill {
+                    flex: 1;
+                }
+            }
+        }
+
+        img {
+            // height: 80px;
+        }
+
         textarea {
             flex: 1;
             resize: none;

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <ul>
+    </ul>
+
+
+</body>
+
+<script>
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+        ; (async () => {
+            pushToUl("noi dung 1")
+                .then(() => {
+                    return pushToUl("noi dung 2")
+                })
+                .then(() => {
+                    return pushToUl("noi dung 3")
+                })
+                .then(() => {
+                })
+        })()
+
+
+    function createLi(content) {
+        const li = document.createElement('li')
+        li.innerHTML = content
+        return li
+    }
+
+    async function pushToUl(content) {
+        const ul = document.querySelector('ul')
+        const li = createLi(content)
+        await delay(1900)
+        ul.appendChild(li)
+
+        const duration = 5000
+        li.style.animation = `animation-remove ${duration}ms 1 both`
+        setTimeout(() => { ul.removeChild(li) }, duration)
+    }
+</script>
+
+<style>
+    html,
+    body {
+        background-color: black;
+        color: white;
+    }
+
+    ul {
+        display: flex;
+        flex-direction: column-reverse;
+        border: 1px solid red;
+    }
+
+    li {
+        background-color: blue;
+        padding: 8px 0;
+        margin-top: 8px;
+        list-style: none;
+    }
+
+    .animation-remove {
+        animation: animation-remove 2000ms 1 both;
+    }
+
+    @keyframes animation-remove {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+        }
+    }
+</style>
+
+</html>
