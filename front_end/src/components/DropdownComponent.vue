@@ -37,12 +37,10 @@ export default {
     watch: {
         pOpen() {
             if (this.pOpen) {
-                this.open()
-                console.log('open')
+                this.open()                
             }
             else {
-                this.close()
-                console.log('close')
+                this.close()                
             }
         }
     }

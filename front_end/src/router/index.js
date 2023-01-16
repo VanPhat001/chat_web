@@ -6,6 +6,7 @@ import Home from '../components/Home.vue';
 import CreatePost from '../components/CreatePost.vue';
 import Profile from '../components/Profile.vue';
 import ContactBook from '../components/ContactBook.vue';
+import PostSingle from '../components/PostSingle.vue';
 
 
 const routes = [
@@ -29,6 +30,9 @@ const routes = [
     },
     {
         path: '/contact-book', component: ContactBook
+    },
+    {
+        path: '/post/:id', component: PostSingle
     }
 ]
 

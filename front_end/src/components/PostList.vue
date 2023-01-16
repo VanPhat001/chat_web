@@ -3,7 +3,7 @@
         <div ref="hidden-item" style="height: 0;"></div>
 
         <template v-for="post in posts">
-            <PostComponent class="post-component" :pPost="post"></PostComponent>
+            <PostComponent class="post-component" :pPost="post" @imageClick="openImageFullScreen"></PostComponent>
         </template>
 
         <div class="btn-fixed">
@@ -13,6 +13,11 @@
             <button class="btn btn-scroll" @click="scrollToTop">
                 <i class="fa-solid fa-angle-up"></i>
             </button>
+        </div>
+
+        <div ref="image-box" class="image-box close">
+            <div class="background-fullscreen" @click="closeImageFullScreen"></div>
+            <img ref="image-show" src="">
         </div>
 
     </div>
@@ -52,6 +57,13 @@ export default {
             console.log({ el });
             el.scrollIntoView({ behavior: "smooth", inline: "nearest" });
         },
+        openImageFullScreen(imgLink) {
+            this.$refs['image-show'].src = imgLink
+            this.$refs['image-box'].classList.remove('close')
+        },
+        closeImageFullScreen() {
+            this.$refs['image-box'].classList.add('close')
+        }
     },
 
     async created() {
@@ -74,6 +86,32 @@ export default {
 
 
 <style lang="scss" scoped>
+.image-box {
+    position: fixed;
+    inset: 0;
+
+    &.close {
+        display: none;
+    }
+    
+    .background-fullscreen {
+        background-color: rgba(0, 0, 0, 0.301);
+        width: 100%;
+        height: 100%;
+    }
+
+    img {
+        max-width: 70vw;
+        max-height: 70vh;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 100%;
+    }
+}
+
+
 .post-list {
     // --friend-list-width: 220px;
     height: 100%;

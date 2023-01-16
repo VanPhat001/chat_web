@@ -12,7 +12,8 @@
             <div class="card-body">
                 <div class="content">
                     <p class="content-text">{{ post.content.text }}</p>
-                    <img class="content-image" v-if="post.content.image !== null" :src="post.content.image">
+                    <img class="content-image" @click="imageClickHandle(post.content.image)"
+                        v-if="post.content.image !== null" :src="post.content.image">
                 </div>
 
                 <div class="controls">
@@ -160,6 +161,10 @@
                     }
 
                     .content-text {}
+
+                    .content-image {
+                        cursor: pointer;
+                    }
                 }
             }
         }
@@ -216,6 +221,7 @@ import accountService from '../services/account.service'
 import commentService from '../services/comment.service'
 import postService from '../services/post.service'
 export default {
+    emits: ['imageClick'],
     props: {
         pPost: { type: Object, default: {} }
     },
@@ -265,6 +271,9 @@ export default {
             const result = likes.findIndex(accId => accId == user._id)
 
             return result !== NOT_FOUND
+        }, 
+        socket() {
+            return this.$store.state.socket
         }
     },
     methods: {
@@ -302,6 +311,11 @@ export default {
 
             if (index == NOT_FOUND) {
                 likes.push(user._id)
+                this.socket.emit('like-post-to', {
+                    from: user._id,
+                    to: this.author._id,
+                    postId: this.post._id
+                })
             }
             else {
                 likes.splice(index, 1)
@@ -365,7 +379,16 @@ export default {
 
                 this.commentText = ''
                 await this.openCommentBox()
+
+                this.socket.emit('commentTo', {
+                    receipient: this.author._id,
+                    commentId: insertedId,
+                    postId: this.post._id
+                })
             }
+        },
+        imageClickHandle(imgLink) {
+            this.$emit('imageClick', imgLink)
         }
     },
 

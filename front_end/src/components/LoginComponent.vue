@@ -3,10 +3,14 @@ import RegisterComponent from './RegisterComponent.vue'
 import LoaddingComponent from './LoaddingComponent.vue'
 import accountService from '../services/account.service'
 import { mapMutations, mapActions } from 'vuex'
-import { V_ON_WITH_KEYS } from '@vue/compiler-dom'
 export default {
     components: {
         RegisterComponent, LoaddingComponent
+    },
+    computed: {
+        accountIdInLocalStore() {
+            return localStorage.getItem('chat-web-accountId')
+        }
     },
     data() {
         return {
@@ -21,9 +25,17 @@ export default {
     methods: {
         ...mapMutations(['setAccount']),
         ...mapActions(['connectSocket', 'userOnline']),
-        async login() {
+        async login(accId = null) {
             try {
                 const account = await accountService.findByUsernameAndPassword(this.username, this.password)
+
+                // if (accId === null) {
+                //     account = await accountService.findByUsernameAndPassword(this.username, this.password)
+                // }
+                // else {
+                //     account = await accountService.getById(accId)
+                //     // chưa xử lí accId không tồn tại
+                // }
 
                 const NOT_FOUND = ''
                 if (account === NOT_FOUND) {
@@ -57,13 +69,16 @@ export default {
             this.$refs['register-model'].classList.add('close')
         }
     },
+    // async created() {         
+        // await this.login(this.accountIdInLocalStore)
+    // },
     mounted() {
         document.querySelector('#login-username').focus()
 
         const loadding = document.querySelector('.loadding-component')
         const { x, y } = loadding.getBoundingClientRect()
         this.xLoadding = x
-        this.yLoadding = y        
+        this.yLoadding = y
         loadding.remove()
     },
 }
@@ -97,7 +112,7 @@ export default {
 
         <div class="row">
             <div class="col">
-                <input type="checkbox" id="save-account" checked>
+                <input type="checkbox" id="save-account">
                 <label for="save-account">Ghi nhớ tài khoản</label>
             </div>
         </div>

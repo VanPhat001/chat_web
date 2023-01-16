@@ -18,6 +18,11 @@ class PostService {
         return (await this.api.get(`/post/author/${author}`)).data
     }
 
+    async getById(id) {
+        // [GET] /api/post/:id
+        return (await this.api.get(`/post/${id}`)).data
+    }
+
     async create({ author, content = { text: null, image: null }, likes = [], comments = [] }) {
         // [POST] /api/post/
         return (await this.api.post('/post', {

@@ -7,40 +7,40 @@
 
             <div class="row">
                 <div class="col">
-                    <input class="username" id="register-username" type="text" placeholder="username" autofocus>
+                    <input class="username" id="register-username" type="text" placeholder="Username" autofocus>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="password" id="register-password" type="password" placeholder="password">
+                    <input class="password" id="register-password" type="password" placeholder="Mật khẩu">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="password2" id="register-password2" type="password" placeholder="password">
+                    <input class="password2" id="register-password2" type="password" placeholder="Nhập lại mật khẩu">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="lastname" id="register-lastname" type="text" placeholder="lastname">
+                    <input class="lastname" id="register-lastname" type="text" placeholder="Họ">
                 </div>
                 <div class="col">
-                    <input class="firstname" id="register-firstname" type="text" placeholder="firstname">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <input class="email" type="text" placeholder="email">
+                    <input class="firstname" id="register-firstname" type="text" placeholder="Tên">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="address" type="text" placeholder="address">
+                    <input class="email" type="text" placeholder="Email">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <input class="address" type="text" placeholder="Địa chỉ">
                 </div>
             </div>
 

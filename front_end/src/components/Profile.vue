@@ -40,7 +40,7 @@
                             <i class="fa-solid fa-user-plus"></i>
                             Thêm bạn bè
                         </button>
-                        <button class="btn btn-chat" @click="clickHandle">
+                        <button class="btn btn-chat" @click="chatHandle">
                             <i class="fa-solid fa-message"></i>
                             Nhắn tin
                         </button>
@@ -56,22 +56,27 @@
 
         <PostList :pUserId="$route.params.id" @loaded="incCounter"></PostList>
 
+        <template v-if="openMiniChat">
+            <MiniChat class="mini-chat" :pUserInfo="miniChatUserData" @close="closeMiniChatHandle"></MiniChat>
+        </template>
+
     </div>
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import friendService from '../services/friend.service'
 import PostList from './PostList.vue'
 import DropdownComponent from './DropdownComponent.vue'
 import LoaddingComponent from './LoaddingComponent.vue'
-import { mapActions } from 'vuex'
-
+import MiniChat from './MiniChat.vue'
 
 export default {
     components: {
         PostList,
         DropdownComponent,
-        LoaddingComponent
+        LoaddingComponent,
+        MiniChat
     },
     computed: {
         userLogin() {
@@ -94,7 +99,12 @@ export default {
                 OTHER: 'other'
             }),
             profileType: 'user',
-            loadedCounter: 0
+            loadedCounter: 0,
+            openMiniChat: false,
+            miniChatUserData: {
+                userLeftId: null,
+                userRightId: null
+            }
         }
     },
     methods: {
@@ -141,6 +151,17 @@ export default {
                 console.log(error)
                 alert('Có lỗi xảy ra, hãy thực hiện thao tác này sau...')
             }
+        },
+        chatHandle() {
+            // chuẩn bị dữ liệu để gửi cho mini-chat render
+            this.miniChatUserData = {
+                userLeftId: this.profileId,
+                userRightId: this.userLogin._id
+            }
+            this.openMiniChat = true
+        },
+        closeMiniChatHandle() {
+            this.openMiniChat = false
         }
     },
     async created() {
@@ -165,7 +186,7 @@ export default {
                     this.profileType = this.ROLE.FRIEND
                 }
                 else {
-                    // [chưa làm] nếu isAccept === false ---> người lạ
+                    // [chưa làm] nếu isAccept === true ---> người lạ
                     //   TH1: accountId1 gửi lời mời kết bạn cho accountId2
                     if (this.userLogin._id == friendObj.accountId1) {
                         // userLogin là người gửi request
@@ -223,6 +244,16 @@ export default {
             width: 100%;
         }
     }
+}
+
+.mini-chat {
+    position: fixed;
+    bottom: 0;
+    right: 72px;
+
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+    border: 1px solid #146dd3;
 }
 
 .user {

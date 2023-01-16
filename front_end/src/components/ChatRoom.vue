@@ -242,7 +242,16 @@ export default {
                     this.$refs['img'].src = ''
                 }
             }, 620)
-        }
+        },
+
+        closeImageFullScreen() {
+            this.$refs['image-box'].classList.add('close')
+        },
+
+        openImageFullScreen(imgLink) {
+            this.$refs['image-show'].src = imgLink
+            this.$refs['image-box'].classList.remove('close')
+        },
     },
 
     async created() {
@@ -272,7 +281,13 @@ export default {
             }
 
             this.friendsChatId = friendsChatIdData
-            await this.loadPreviewLastMessage()
+            // await this.loadPreviewLastMessage()
+            // await this.setSelectFriendIndex(this.selectFriendIndex)
+
+            await Promise.all([
+                this.loadPreviewLastMessage(),
+                this.setSelectFriendIndex(this.selectFriendIndex)
+            ])
 
             // lắng nghe dữ liệu trả về từ socket
             this.receiveMessage()
@@ -292,7 +307,7 @@ export default {
     },
 
     unmounted() {
-        this.stopReceiveMessage = true        
+        this.stopReceiveMessage = true
     }
 }
 </script>
@@ -333,7 +348,10 @@ export default {
                             v-if="index < lastMessages.length && lastMessages[index] !== undefined && lastMessages[index].content">
                             <p class="text">
                                 <span v-if="lastMessages[index].sender == accountLogin._id">Bạn: </span>
-                                {{ lastMessages[index].content.text }}
+                                <span v-if="lastMessages[index].content.text">{{
+                                    lastMessages[index].content.text
+                                }}</span>
+                                <span v-else>[hình ảnh]</span>
                             </p>
                             <p class="time">{{ new Date(lastMessages[index].timeSend).toLocaleString() }}</p>
                         </template>
@@ -365,7 +383,8 @@ export default {
                             <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
                         </template>
                         <template v-else>
-                            <img class="message" :src="message.content.image" alt="lỗi hiển thị">
+                            <img class="message" :src="message.content.image" :title="getDateTime(message.timeSend)"
+                                alt="lỗi hiển thị" @click="openImageFullScreen(message.content.image)">
                         </template>
                     </template>
 
@@ -375,7 +394,8 @@ export default {
                             <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
                         </template>
                         <template v-else>
-                            <img class="message" :src="message.content.image" alt="lỗi hiển thị">
+                            <img class="message" :src="message.content.image" :title="getDateTime(message.timeSend)"
+                                alt="lỗi hiển thị" @click="openImageFullScreen(message.content.image)">
                         </template>
 
                     </template>
@@ -402,6 +422,11 @@ export default {
             </div>
         </div>
 
+        <div ref="image-box" class="image-box close">
+            <div class="background-fullscreen" @click="closeImageFullScreen"></div>
+            <img ref="image-show" src="https://cf.shopee.vn/file/e78672db6328f6c20b1c407a7b92c676_tn">
+        </div>
+
     </div>
 </template>
 
@@ -411,33 +436,7 @@ export default {
     display: none;
 }
 
-// ====================== layout ====================== 
-
-
-.model {
-    .background {
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.39);
-        z-index: 1;
-    }
-
-    .account-list {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1;
-
-        background-color: var(--color-background);
-        padding: 24px;
-        border: 1px solid red;
-        max-width: 80%;
-        max-height: 80%;
-        width: 400px;
-        height: 500px;
-    }
-}
+// ====================== layout ======================
 
 .chat-room {
     // height: 100vh;
@@ -468,6 +467,56 @@ export default {
 }
 
 // ======================= public style =======================
+.model {
+    .background {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.39);
+        z-index: 1;
+    }
+
+    .account-list {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+
+        background-color: var(--color-background);
+        padding: 24px;
+        border: 1px solid red;
+        max-width: 80%;
+        max-height: 80%;
+        width: 400px;
+        height: 500px;
+    }
+}
+
+.close {
+    display: none !important;
+}
+
+.image-box {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+
+    .background-fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-color: rgba(0, 0, 0, 0.801);
+    }
+
+    .image-show {
+        max-width: 75%;
+        max-height: 75%;
+    }
+}
+
 img.avatar {
     --avatar-size: 54px;
     width: var(--avatar-size);
@@ -580,6 +629,7 @@ img.avatar {
                 .name {
                     width: 100%;
                     font-weight: bold;
+                    font-size: 16px;
                 }
 
                 .text {

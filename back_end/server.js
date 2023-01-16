@@ -19,11 +19,24 @@ io.on('connection', socket => {
 
     socket.on('send-message-to-friend-chat', message => {
         console.log('>> receive data')
-        const {sender, receipient, content, timeSend} = message // content = {text, image}
-
+        const { sender, receipient, content, timeSend } = message // content = {text, image}
 
         io.to(receipient).emit('receive-message-from-friend-chat', message)
         console.log(`>> send data to client ${receipient} in room-chat`)
+    })
+
+    socket.on('commentTo', ({ receipient, commentId, postId }) => {
+        console.log('>> receive data')
+
+        io.to(receipient).emit('receive-comment', commentId, postId)
+        console.log(`>> send comment to ${receipient}: ${commentId}`)
+    })
+
+    socket.on('like-post-to', ({ from, to, postId }) => {
+        console.log('>> receive data')
+
+        io.to(to).emit('receive-like-post', from, postId)
+        console.log(`>> ${from} like post of ${to}`)
     })
 })
 

@@ -15,12 +15,23 @@
 
             <span class="dropdown-box" @click="showNotifyDropdown">
                 <i class="fa-solid fa-bell"></i>
+                <div class="notify-number" v-show="notifyNumber > 0">{{ notifyNumber }}</div>
 
                 <DropdownComponent class="dropdown-component dropdown" :pOpen="openDropdown">
                     <template v-slot:default>
                         <ul class="notify-list">
-                            <li class="notify" v-for="item in 20">
-                                notify {{ item }}
+                            <li class="notify" v-for="notify in notifyList" :key="notify._id">
+                                <router-link :to="`/post/${notify.postId}`">
+                                    <template v-if="notify.type === 'comment'">
+                                        <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>comment bài
+                                            viết</b> của bạn
+                                    </template>
+                                    <template v-else>
+                                        <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>thích</b> bài
+                                        viết
+                                        của bạn
+                                    </template>
+                                </router-link>
                             </li>
                         </ul>
                     </template>
@@ -33,7 +44,7 @@
         </div>
 
         <router-link class="right" :to="`/profile/${loginAccount._id}`">
-            <p class="name">{{ fullName }}</p>
+            <p class="name">{{ fullName(loginAccount) }}</p>
             <img :src="loginAccount.avatar">
         </router-link>
     </div>
@@ -42,31 +53,43 @@
 
 <script>
 import { mapActions } from 'vuex'
-import DropdownComponent from './DropdownComponent.vue';
+import utils from '../utils'
+import commentService from '../services/comment.service'
+import DropdownComponent from './DropdownComponent.vue'
 export default {
     components: {
         DropdownComponent
     },
     data() {
         return {
-            openDropdown: false
+            openDropdown: false,
+            notifyList: [],
+            notifyNumber: 0
         }
     },
     computed: {
         loginAccount() {
             return this.$store.state.account
         },
-        fullName() {
-            return this.loginAccount.lastName + ' ' + this.loginAccount.firstName
+        accountMap() {
+            return this.$store.state.accountMap
         }
     },
     methods: {
-        ...mapActions(['userOffline']),
+        ...mapActions(['userOffline', 'pushToAccountMap']),
+
+        fullName: utils.fullName,
 
         showNotifyDropdown() {
             this.openDropdown = !this.openDropdown
+
+            if (this.openDropdown) {
+                this.notifyNumber = 0
+            }
         },
         async logOutAccount() {
+            // localStorage.removeItem('chat-web-accountId')
+
             this.$store.state.socket.disconnect()
             this.$store.state.socket = null
 
@@ -75,6 +98,28 @@ export default {
             this.$router.push('/login')
             // window.open('/login', '_self')
         },
+    },
+    mounted() {
+        this.$store.state.socket.on('receive-comment', async (commentId, postId) => {
+            const cmt = await commentService.getCommentId(commentId)
+            cmt.type = 'comment'
+            cmt.postId = postId
+
+            if (!this.accountMap.has(cmt.accountId)) {
+                await this.pushToAccountMap([cmt.accountId])
+            }
+
+            this.notifyList.push(cmt)
+            this.notifyNumber++
+        })
+        this.$store.state.socket.on('receive-like-post', async (accountId, postId) => {
+            if (!this.accountMap.has(accountId)) {
+                await this.pushToAccountMap([accountId])
+            }
+
+            this.notifyList.push({ accountId, postId, type: 'like-post' })
+            this.notifyNumber++
+        })
     }
 }
 </script>
@@ -84,6 +129,22 @@ export default {
 <style lang="scss" scoped>
 .dropdown-box {
     position: relative;
+
+    .notify-number {
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-radius: 50%;
+        color: white;
+        background-color: rgba(95, 158, 160, 0.815);
+        font-size: 60%;
+
+        --size: 14px;
+        width: var(--size);
+        height: var(--size);
+        line-height: var(--size);
+        text-align: center;
+    }
 
     &>.dropdown {
         position: absolute;
@@ -103,6 +164,9 @@ export default {
         .notify-list {
             height: 100%;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-end;
 
 
             /* width */
