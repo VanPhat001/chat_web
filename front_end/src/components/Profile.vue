@@ -251,7 +251,7 @@ export default {
     bottom: 0;
     right: 72px;
 
-    border-radius: 6px 6px 0 0;
+    border-radius: 2px 2px 0 0;
     overflow: hidden;
     border: 1px solid #146dd3;
 }

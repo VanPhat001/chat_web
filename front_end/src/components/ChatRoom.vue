@@ -5,6 +5,7 @@ import messageService from '../services/message.service'
 import accountService from '../services/account.service'
 import { mapGetters, mapActions } from 'vuex'
 import utils from '../utils'
+import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
 
 export default {
     components: {
@@ -40,7 +41,7 @@ export default {
     },
 
     methods: {
-        ...mapActions(['socketSendMessageToFriendChat']),
+        ...mapActions(['socketSendMessageToFriendChat', 'createAndSendMessage']),
 
         incCounter() {
             this.loadedCounter++
@@ -86,40 +87,24 @@ export default {
         },
 
         async sendMessage() {
-            const EMPTY_STRING = ''
-            if (this.text != EMPTY_STRING) {
-                console.log('send message:', this.text);
+            // tạo object message = {...} trên db
+            // tạo thành công thì tiến hành thông báo qua socket
+            // [chưa làm] tạo thành công nhưng gửi socket thất bại!!!
 
-                try {
-                    const content = {
-                        text: null,
-                        image: null
-                    }
-                    if (await utils.isImgUrl(this.text)) {
-                        content.image = this.text
-                    }
-                    else {
-                        content.text = this.text
-                    }
+            const message = await this.createAndSendMessage({
+                sender: this.accountLogin._id,
+                receipient: this.selectFriend._id,
+                text: this.text
+            })
 
-                    const message = {
-                        sender: this.accountLogin._id,
-                        receipient: this.selectFriend._id,
-                        content: content,
-                        timeSend: new Date()
-                    }
+            if (message !== null) {
+                // render lại dữ liệu hiển thị
+                this.messages.push(message)
+                this.loadPreviewLastMessage()
 
-                    // render lại dữ liệu hiển thị trên chat-room
-                    await messageService.createMessage(message.sender, message.receipient, message.content)
-                    this.messages.push(message)
-                    this.loadPreviewLastMessage()
-
-                    // gửi tin socket để các client khác nhận thông báo `có tin nhắn`
-                    this.socketSendMessageToFriendChat(message)
-                    this.resetMessageContent()
-                } catch (error) {
-                    console.log(error)
-                }
+                // gửi dữ liệu qua socket
+                this.socketSendMessageToFriendChat(message)
+                this.resetMessageContent()
             }
         },
 
@@ -132,6 +117,7 @@ export default {
 
                 // duyệt qua toàn bộ mảng receiveMessageQueue, xử lí từng thông điệp và loại bỏ nó ra khỏi mảng
                 // sau khi làm xong thì nghỉ 1s và duyệt lại từ đầu
+                let check = false
                 while (receiveMessageQueue.length > 0) {
                     const message = receiveMessageQueue.shift()
 
@@ -169,9 +155,15 @@ export default {
                         await this.loadPreviewLastMessage()
                     }
 
+                    check = true
                 }
 
-                await delay(1000)
+                if (check) {
+                    const audio = new Audio(audioFile)
+                    audio.play()
+                }
+
+                await delay(1500)
             }
             // console.log('>> stop receive message');
         },

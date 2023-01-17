@@ -5,7 +5,7 @@
             <div class="row">
                 <div class="col">
                     <img class="avatar"
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3HRBBRWCcgKjir6au_unzo38eWA_hC9S3-Mf8NYQpKQ85u9PZX4IK_RtInadQ2Vycj8&usqp=CAU">
+                        :src="accountMap.get(userInfo.userLeftId).avatar">
                     <p class="name">{{ 'ten user' }}</p>
                 </div>
                 <div class="col col-right">
@@ -40,7 +40,7 @@
         <div class="box-send-message">
             <div class="row">
                 <div class="col col-fill">
-                    <input type="text" @keydown.enter.prevent="sendMessage">
+                    <input type="text" @keydown.enter.prevent="sendMessage" v-model="text">
                 </div>
                 <div class="col">
                     <button @click="sendMessage">send</button>
@@ -54,7 +54,8 @@
 
 <script>
 import messageService from '../services/message.service'
-import { mapActions } from 'vuex';
+import { mapActions } from 'vuex'
+import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
 export default {
     emits: ['close'],
     props: {
@@ -65,7 +66,9 @@ export default {
     },
     data() {
         return {
-            messages: []
+            messages: [],
+            text: '',
+            stopReceiveMessage: false
         }
     },
     computed: {
@@ -77,37 +80,76 @@ export default {
         }
     },
     methods: {
-        ...mapActions(['pushToAccountMap']),
+        ...mapActions(['pushToAccountMap', 'socketSendMessageToFriendChat', 'createAndSendMessage']),
 
         closeHandle() {
             this.$refs['mini-chat'].classList.add('animation-close')
 
-            // đợi sau khi animation-close kết thúc (trong 1s) thì
+            // đợi sau khi animation-close kết thúc (trong 0.7s) thì
             // gửi thông tin sự kiện close cho parent
             setTimeout(() => {
                 this.$emit('close')
-            }, 1000)
+            }, 700)
         },
-        
+
         scrollToLastMessage() {
             const el = this.$refs['last-row-hidden']
             el.scrollIntoView({ behavior: "smooth", inline: "nearest" });
         },
 
-        sendMessage() {
-            alert('qua bên chat-room nhắn tin, bên đây chưa code :)')
+        async receiveMessage() {
+            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+            const receiveMessageQueue = this.$store.state.receiveMessageQueue
+
+            while (!this.stopReceiveMessage) {
+
+                let check = false
+                while (receiveMessageQueue.length > 0) {
+                    const message = receiveMessageQueue.shift()
+                    this.messages.push(message)
+                    check = true
+                }
+
+                // this.$refs['audio'].src = `@\assets\mp3\pristine-609 (mp3cut.net).mp3`
+                // this.$refs['audio'].play()
+                if (check) {
+                    const audio = new Audio(audioFile);
+                    audio.play()
+                }
+
+                await delay(1500)
+            }
+        },
+
+        async sendMessage() {
+            const message = await this.createAndSendMessage({
+                sender: this.userInfo.userRightId,
+                receipient: this.userInfo.userLeftId,
+                text: this.text,
+            })
+
+            if (message !== null) {
+                this.messages.push(message)
+                await this.socketSendMessageToFriendChat(message)
+                this.text = ''
+            }
         }
     },
     async created() {
         try {
             await this.pushToAccountMap([this.userInfo.userLeftId, this.userInfo.userRightId])
             this.messages = await messageService.getAllMessage(this.userInfo.userLeftId, this.userInfo.userRightId)
+
+            this.receiveMessage()
         } catch (error) {
             console.log(error)
         }
     },
     updated() {
         this.scrollToLastMessage()
+    },
+    unmounted() {
+        this.stopReceiveMessage = true
     },
 }
 </script>
@@ -145,7 +187,7 @@ export default {
 .mini-chat {
     width: 350px;
     height: 460px;
-    max-height: 700vh;
+    max-height: 70vh;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.616);
 
@@ -203,7 +245,7 @@ export default {
 
         .row:has(.col-left)+.row .col-left,
         .row:has(.col-right)+.row .col-right {
-            img {
+            .avatar {
                 opacity: 0;
             }
         }
@@ -215,7 +257,7 @@ export default {
         .content {
             max-width: 70%;
             padding: 5px;
-            border-radius: 6px;
+            border-radius: 5px;
         }
 
         .col-left {
@@ -250,11 +292,11 @@ export default {
 }
 
 .animation-show {
-    animation: animation-show 1000ms 1 both;
+    animation: animation-show 700ms 1 both;
 }
 
 .animation-close {
-    animation: animation-close 1000ms 1 both;
+    animation: animation-close 700ms 1 both;
 }
 
 @keyframes animation-show {
