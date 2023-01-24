@@ -1,22 +1,31 @@
 <template>
-	<!-- <router-link to="/chat-room">goto chat room</router-link> -->
-	<header v-if="$route.path != '/' && $route.path != '/login'">
-		<HeaderComponent></HeaderComponent>
-	</header>
+	<div class="app">
+		<header v-if="$route.path != '/' && $route.path != '/login'">
+			<HeaderComponent></HeaderComponent>
+		</header>
 
-	<main>
-		<router-view :key="$route.fullPath"></router-view>
-	</main>
+		<main>
+			<router-view :key="$route.fullPath"></router-view>
+		</main>
+	</div>
 </template>
 
 <style lang="scss">
-header {
-	height: 50px;
-	background-color: #fff;
-}
+.app {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	overflow: hidden;
 
-main {
-	height: calc(100vh - 50px);
+	header {
+		height: 50px;
+		background-color: #fff;
+	}
+
+	main {
+		flex: 1;
+		overflow: auto;
+	}
 }
 </style>
 

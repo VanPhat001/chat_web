@@ -11,6 +11,18 @@ class AccountService {
         return await this.Account.find({}).toArray()
     }
 
+    async findByIdArray(idArr) {
+        idArr.forEach((item, index) => {
+            idArr[index] = ObjectId(item)
+        })
+        
+        return await this.Account.find({
+            _id: {
+                $in: idArr
+            }
+        }).toArray()
+    }
+
     // find by username & password
     async findByUsernameAndPassword(username, password) {
         return await this.Account.findOne({
@@ -55,7 +67,7 @@ class AccountService {
     }
 
     // create account
-    async create(username, password, firstName, lastName, email, avatar) {
+    async create(username = '', password = '', firstName = '', lastName = '', email = '', avatar = '') {
         const account = {
             username: username,
             password: password,

@@ -16,6 +16,18 @@ class MessageService {
         return await this.Message.findOne({ _id: ObjectId(id) })
     }
 
+    async getMany(idList) {
+        idList.forEach((item, index) => {
+            idList[index] = ObjectId(item)
+        })
+
+        return await this.Message.find({
+            _id: {
+                $in: idList
+            }
+        }).toArray()
+    }
+
     // create message
     async create(sender, receipient, content) {
         const timeSend = new Date()

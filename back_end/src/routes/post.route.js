@@ -1,5 +1,6 @@
 const postController = require('../controllers/post.controller')
 const express = require('express')
+const PostService = require('../services/post.service')
 const router = express.Router()
 
 
@@ -7,6 +8,21 @@ const router = express.Router()
 router.route('/')
     .get(postController.getAll)
     .post(postController.create)
+
+router.route('/many')
+    .post(async (req, res, next) => {
+        try {
+            const { idList } = req.body
+
+            const postService = new PostService()
+            const data = await postService.getMany(idList)
+
+            console.log('>> get many posts')
+            res.send(data)
+        } catch (error) {
+            next(error)
+        }
+    })
 
 // route: /api/post/:id
 router.route('/:id')

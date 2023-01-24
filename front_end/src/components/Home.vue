@@ -44,15 +44,14 @@ export default {
 <style lang="scss" scoped>
 .home {
     height: 100%;
-    --friend-list-width: 200px;
+    display: flex;
 
     .friend-list {
-        width: var(--friend-list-width);
+        width: 200px;
     }
 
     .post-list {
-        padding-left: var(--friend-list-width);
-
+        flex: 1;
 
         /* width */
         &::-webkit-scrollbar {

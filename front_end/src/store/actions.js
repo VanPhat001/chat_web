@@ -65,14 +65,14 @@ const actions = {
     async fetchAccountMap(context) {
         console.log('>> start: fetch accountMap', new Date().toLocaleString())
         const accountMap = context.state.accountMap
-        const tasks = []
 
         const keys = [...accountMap.keys()]
-        keys.forEach(accid => {
-            tasks.push(accountService.getById(accid))
-        })
+        // keys.forEach(accid => {
+        //     tasks.push(accountService.getById(accid))
+        // })
 
-        const data = await Promise.all(tasks)
+        // const data = await Promise.all(tasks)
+        const data = await accountService.getMany(keys)
         data.forEach(acc => {
             if (accountMap.get(acc._id).timeLastActive != acc.timeLastActive) {
                 accountMap.set(acc._id, acc)
@@ -109,14 +109,7 @@ const actions = {
     async pushToAccountMap({ state }, accIdArray) {
         const accountMap = state.accountMap
 
-        const accountPromises = []
-        accIdArray.forEach(accId => {
-            if (!accountMap.has(accId)) {
-                accountPromises.push(accountService.getById(accId))
-            }
-        })
-
-        const accounts = await Promise.all(accountPromises)
+        const accounts = await accountService.getMany(accIdArray)
         accounts.forEach(account => {
             accountMap.set(account._id, account)
         })

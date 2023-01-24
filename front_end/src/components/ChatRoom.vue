@@ -1,6 +1,7 @@
 <script>
 import AccountList from './AccountList.vue';
 import LoaddingComponent from './LoaddingComponent.vue'
+import EmojiPicker from './EmojiPicker.vue'
 import messageService from '../services/message.service'
 import accountService from '../services/account.service'
 import { mapGetters, mapActions } from 'vuex'
@@ -9,7 +10,7 @@ import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
 
 export default {
     components: {
-        AccountList, LoaddingComponent
+        AccountList, LoaddingComponent, EmojiPicker
     },
     data() {
         return {
@@ -23,7 +24,8 @@ export default {
             lastMessages: [],
             stopReceiveMessage: false,
             loadedCounter: 0,
-            timeOutId: null
+            timeOutId: null,
+            openEmojiPicker: false
         }
     },
 
@@ -161,6 +163,7 @@ export default {
                 if (check) {
                     const audio = new Audio(audioFile)
                     audio.play()
+                        .catch(err => console.log(err))
                 }
 
                 await delay(1500)
@@ -244,6 +247,15 @@ export default {
             this.$refs['image-show'].src = imgLink
             this.$refs['image-box'].classList.remove('close')
         },
+
+        selectEmojiHandle({ icon }) {
+            // alert(icon)
+            this.text += icon
+        },
+
+        openOrCloseEmojiPicker() {
+            this.openEmojiPicker = !this.openEmojiPicker
+        }
     },
 
     async created() {
@@ -254,14 +266,22 @@ export default {
             console.log(friendsChatIdData);
 
             // fetch api to get friends chat account  ===> [ {_id, username, password...} ]
-            const getFriendsChatPromises = []
+            // const getFriendsChatPromises = []
+            // friendsChatIdData.forEach(friendId => {
+            //     if (!this.accountMap.has(friendId)) {
+            //         getFriendsChatPromises.push(accountService.getById(friendId))
+            //     }
+            // })
+
+            const accIdList = []
             friendsChatIdData.forEach(friendId => {
                 if (!this.accountMap.has(friendId)) {
-                    getFriendsChatPromises.push(accountService.getById(friendId))
+                    accIdList.push(friendId)
                 }
             })
 
-            const data = await Promise.all(getFriendsChatPromises)
+            // const data = await Promise.all(getFriendsChatPromises)
+            const data = await accountService.getMany(accIdList)
             for (let i = 0; i < data.length; i++) {
                 const acc = data[i]
                 this.accountMap.set(acc._id, acc)
@@ -407,6 +427,14 @@ export default {
                         <textarea placeholder="enter text here" v-model="text" @keydown="debounce"
                             @keydown.enter.prevent="sendMessage"></textarea>
                     </div>
+                    <div class="col emoji-picker-box">
+                        
+                        <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmojiHandle"></EmojiPicker>
+
+                        <button @click="openOrCloseEmojiPicker">
+                            <i class="fa-solid fa-face-smile"></i>
+                        </button>
+                    </div>
                     <div class="col">
                         <button @click="sendMessage">send</button>
                     </div>
@@ -424,6 +452,16 @@ export default {
 
 
 <style lang="scss" scoped>
+.emoji-picker-box {
+    position: relative;
+
+    .emoji-picker {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+    }
+}
+
 .hide {
     display: none;
 }
@@ -431,30 +469,18 @@ export default {
 // ====================== layout ======================
 
 .chat-room {
-    // height: 100vh;
     height: 100%;
     width: 100%;
     position: relative;
 
-    .sidebar {
-        height: 100%;
-        width: 300px;
+    display: flex;
 
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
+    .sidebar {
+        width: 300px;
     }
 
     .main-box {
-        height: 100%;
-        width: calc(100% - 300px);
-        margin-left: 300px;
-
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
+        flex: 1;
     }
 }
 
@@ -583,7 +609,6 @@ img.avatar {
         overflow-y: auto;
 
         .friend-chat {
-            // border: 1px solid green;
             display: flex;
             margin-top: 12px;
 
@@ -591,7 +616,6 @@ img.avatar {
                 background-color: rgb(221, 216, 216);
                 cursor: pointer;
             }
-
 
             .avatar-box {
                 position: relative;
@@ -614,9 +638,6 @@ img.avatar {
             .info {
                 flex: 1;
                 position: relative;
-                // &>* {
-                //     border: 1px solid gray;
-                // }
 
                 .name {
                     width: 100%;

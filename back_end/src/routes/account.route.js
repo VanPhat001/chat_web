@@ -7,6 +7,10 @@ router.route('/')
     .get(accountController.findAll)
     .post(accountController.create)
 
+// route: /api/account/many
+router.route('/many')
+    .post(accountController.findByIdArray)
+
 // route: /api/account/:id
 router.route('/:id')
     .get(accountController.getById)

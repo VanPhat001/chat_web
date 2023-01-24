@@ -271,7 +271,7 @@ export default {
             const result = likes.findIndex(accId => accId == user._id)
 
             return result !== NOT_FOUND
-        }, 
+        },
         socket() {
             return this.$store.state.socket
         }
@@ -331,30 +331,28 @@ export default {
                 let commentsData = null
                 try {
                     const comments = this.post.comments
-                    const commentTasks = []
+
+                    const cmtIdList = []
                     comments.forEach(cmtId => {
-                        commentTasks.push(commentService.getCommentId(cmtId))
+                        cmtIdList.push(cmtId)
                     })
 
-                    commentsData = await Promise.all(commentTasks)
+                    commentsData = await commentService.getMany(cmtIdList)
                 } catch (error) { throw (error) }
                 //#endregion
 
 
                 //#region get account info
                 try {
-                    const accountTasks = []
+                    const accIdList = []
                     commentsData.forEach(comment => {
                         const accId = comment.accountId
                         if (!this.hasAccountMap(accId)) {
-                            accountTasks.push(accountService.getById(accId))
+                            accIdList.push(accId)
                         }
                     });
-                    const accountsData = await Promise.all(accountTasks)
 
-                    accountsData.forEach(acc => {
-                        this.setAccountMap(acc._id, acc)
-                    })
+                    await this.$store.dispatch('pushToAccountMap', accIdList)
                 } catch (error) { throw (error) }
                 //#endregion
 

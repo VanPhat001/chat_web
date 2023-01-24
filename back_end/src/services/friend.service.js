@@ -26,6 +26,18 @@ class FriendService {
         }).toArray()
     }
 
+    async findMany(idList) {
+        idList.forEach((item, index) => {
+            idList[index] = ObjectId(item)
+        })
+
+        return await this.Friend.find({
+            _id: {
+                $in: idList
+            }
+        }).toArray()
+    }
+
     async create(accountId1, accountId2, isAccept = false) {
         return await this.Friend.insertOne({
             accountId1: accountId1,

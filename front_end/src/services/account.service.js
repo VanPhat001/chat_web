@@ -8,6 +8,18 @@ class AccountService {
         })
     }
 
+    async create({ username, password, firstName, lastName, email, avatar }) {
+        // [POST] /api/account/
+        return (await this.api.post('/account', {
+            username: username,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            avatar: avatar
+        })).data
+    }
+
     async findByUsernameAndPassword(username, password) {
         // [GET] /api/account/usr/:username/pwrd/:password
         return (await this.api.get(`/account/usr/${username}/pwrd/${password}`)).data
@@ -15,7 +27,14 @@ class AccountService {
 
     async getById(accountId) {
         // [GET] /api/account/:id
-        return (await this.api(`/account/${accountId}`)).data
+        return (await this.api.get(`/account/${accountId}`)).data
+    }
+
+    async getMany(accIdList) {
+        // [POST] /api/account/many
+        return (await this.api.post(`/account/many`, {
+            accIdList: accIdList
+        })).data
     }
 
     async findByNameOrId(text) {

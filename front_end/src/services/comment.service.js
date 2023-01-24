@@ -13,6 +13,13 @@ class CommentService {
         return (await this.api.get(`/comment/${id}`)).data
     }
 
+    async getMany(idList) {
+        // [POST] /api/comment/many
+        return (await this.api.post(`/comment/many`, {
+            idList: idList
+        })).data
+    }
+
     async create({ accountId, image=null, text, comments=[] }) {
         // [POST] /api/comment/
         const data = (await this.api.post('/comment', {

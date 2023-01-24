@@ -56,6 +56,7 @@ import { mapActions } from 'vuex'
 import utils from '../utils'
 import commentService from '../services/comment.service'
 import DropdownComponent from './DropdownComponent.vue'
+import audioFile from '../assets/mp3/relax-message-tone.mp3'
 export default {
     components: {
         DropdownComponent
@@ -120,6 +121,15 @@ export default {
             this.notifyList.push({ accountId, postId, type: 'like-post' })
             this.notifyNumber++
         })
+    },
+    watch: {
+        notifyNumber() {
+            if (this.notifyNumber !== 0) {
+                const audio = new Audio(audioFile)
+                audio.play()
+                    .catch(err => console.log(err))
+            }
+        }
     }
 }
 </script>

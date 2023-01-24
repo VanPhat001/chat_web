@@ -3,65 +3,88 @@
 
         <p class="title">Đăng ký</p>
 
-        <form @submit.prevent="">
+        <form @submit.prevent="createAccount">
 
             <div class="row">
                 <div class="col">
-                    <input class="username" id="register-username" type="text" placeholder="Username" autofocus>
+                    <input class="username" id="register-username" type="text" placeholder="Username" v-model="username"
+                        autofocus required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col password-box">
+                    <input class="password" id="register-password" type="password" v-model="password"
+                        placeholder="Mật khẩu" required>
+
+                    <div class="show-hide-password" @click.prevent="changeStateShowPassword()">
+                        <span v-if="showPassword">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </span>
+                        <span v-else>
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col password-box">
+                    <input class="password2" id="register-password2" type="password" v-model="password2"
+                        placeholder="Nhập lại mật khẩu" required>
+
+                    <div class="show-hide-password" @click.prevent="changeStateShowPassword2()">
+                        <span v-if="showPassword2">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </span>
+                        <span v-else>
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="password" id="register-password" type="password" placeholder="Mật khẩu">
+                    <input class="lastname" id="register-lastname" type="text" placeholder="Họ" v-model="lastName"
+                        required>
+                </div>
+                <div class="col">
+                    <input class="firstname" id="register-firstname" type="text" placeholder="Tên" v-model="firstName"
+                        required>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="password2" id="register-password2" type="password" placeholder="Nhập lại mật khẩu">
+                    <input class="email" type="text" placeholder="Email" v-model="email">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="lastname" id="register-lastname" type="text" placeholder="Họ">
-                </div>
-                <div class="col">
-                    <input class="firstname" id="register-firstname" type="text" placeholder="Tên">
+                    <input class="address" type="text" placeholder="Địa chỉ" v-model="address">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <input class="email" type="text" placeholder="Email">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <input class="address" type="text" placeholder="Địa chỉ">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <input type="radio" name="gender" id="gender-male">
+                    <input type="radio" name="gender" id="gender-male" :value="CONSTANT.MALE" v-model="gender">
                     <label for="gender-male">Nam</label>
                 </div>
                 <div class="col">
-                    <input type="radio" name="gender" id="gender-female">
+                    <input type="radio" name="gender" id="gender-female" :value="CONSTANT.FEMALE" v-model="gender">
                     <label for="gender-female">Nữ</label>
                 </div>
                 <div class="col">
-                    <input type="radio" name="gender" id="gender-other" checked>
+                    <input type="radio" name="gender" id="gender-other" :value="CONSTANT.OTHER" v-model="gender">
                     <label for="gender-other">Khác</label>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <button class="btn" @click="createAccount">Tạo tài khoản</button>
+                    <button class="btn" type="submit">Tạo tài khoản</button>
                 </div>
             </div>
 
@@ -76,14 +99,65 @@
 
 
 <script>
+import accountService from '../services/account.service';
 export default {
     emits: ['closeModel'],
+    data() {
+        const CONSTANT = Object.freeze({
+            MALE: 'male',
+            FEMALE: 'female',
+            OTHER: 'other'
+        })
+        return {
+            username: '',
+            password: '',
+            password2: '',
+            lastName: '',
+            firstName: '',
+            email: '',
+            address: '',
+            gender: CONSTANT.MALE,
+            CONSTANT: CONSTANT,
+            showPassword: false,
+            showPassword2: false
+        }
+    },
     methods: {
         closeModel() {
             this.$emit('closeModel')
-        }, 
+        },
+        changeStateShowPassword() {
+            this.showPassword = !this.showPassword
+            document.querySelector('#register-password')
+                .type = this.showPassword ? 'text' : 'password'
+        },
+        changeStateShowPassword2() {
+            this.showPassword2 = !this.showPassword2
+            document.querySelector('#register-password2')
+                .type = this.showPassword2 ? 'text' : 'password'
+        },
         createAccount() {
-            alert('chưa code :))');
+            if (this.password !== this.password2) {
+                alert('dữ liệu không hợp lệ')
+            }
+
+            accountService.create({
+                username: this.username,
+                password: this.password,
+                firstName: this.firstName,
+                lastName: this.lastName,
+                email: this.email,
+                avatar: 'https://t4.ftcdn.net/jpg/02/29/75/83/360_F_229758328_7x8jwCwjtBMmC6rgFzLFhZoEpLobB6L8.jpg'
+            })
+                .then(({ insertedId }) => {
+                    console.log({ insertedId })
+                    alert('ok')
+                    alert('tự chuyển qua login form rồi tự đăng nhập, nhà bao việc')
+                })
+                .catch((err) => {
+                    console.log(err)
+                    alert('có lỗi xảy ra phía server')
+                })
         }
     }
 }
@@ -96,6 +170,27 @@ export default {
 
     &>.col {
         flex: 1;
+    }
+}
+
+.password-box {
+    position: relative;
+
+    .show-hide-password {
+        position: absolute;
+        top: 50%;
+        right: 7px;
+        transform: translateY(-50%);
+        font-size: 18px;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &,
+        &:active {
+            opacity: .7;
+        }
     }
 }
 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.3/axios.min.js"
+        integrity="sha512-L4lHq2JI/GoKsERT8KYa72iCwfSrKYWEyaBxzJeeITM9Lub5vlTj8tufqYk056exhjo2QDEipJrg6zen/DDtoQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        console.log('start')
+        console.time('time1')
+        example1(5)
+            .then(() => {
+                console.timeEnd('time1')
+            })
+
+        console.log('between')
+
+
+        console.time('time2')
+        example2(5)
+            .then(() => {
+                console.timeEnd('time2')
+            })
+        console.log('end')
+
+
+
+        async function example1(n) {
+            while (n > 0) {
+                const url = await getImageUrl()
+                // document.querySelector('body')
+                //     .appendChild(createImage(url))
+                n--
+            }
+        }
+
+        async function example2(n) {
+            const promises = []
+            while (n > 0) {
+                promises.push(getImageUrl())
+                n--;
+            }
+
+            await Promise.all(promises)
+            // .then(imgs =>
+            //     imgs.forEach(imgLink =>
+            //         document.querySelector('body')
+            //             .appendChild(createImage(imgLink))
+            //     )
+            // )
+        }
+        async function getImageUrl() {
+            return (await axios.get(`https://api.waifu.pics/${'sfw'}/${'waifu'}`)).data.url
+        }
+
+
+        function createImage(urlLink) {
+            const img = document.createElement('img')
+            img.src = urlLink
+            img.height = 300
+            return img
+        }
+
+    </script>
+</body>
+
+</html>

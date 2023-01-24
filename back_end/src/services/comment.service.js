@@ -16,6 +16,18 @@ class CommentService {
         return await this.Comment.findOne({ _id: ObjectId(id) })
     }
 
+    async getMany(idList) {
+        idList.forEach((item, index) => {
+            idList[index] = ObjectId(item)
+        })
+
+        return await this.Comment.find({
+            _id: {
+                $in: idList
+            }
+        }).toArray()
+    }
+
     // create post
     async create(accountId, image, text, comments) {
         const timeComment = new Date()

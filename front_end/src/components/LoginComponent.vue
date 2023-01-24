@@ -99,14 +99,14 @@ export default {
         <div class="row">
             <div class="col">
                 <label for="login-username">Username: </label>
-                <input id="login-username" type="text" v-model="username" placeholder="Username">
+                <input id="login-username" type="text" v-model="username" placeholder="Username" required>
             </div>
         </div>
 
         <div class="row">
             <div class="col">
                 <label for="login-password">Password: </label>
-                <input id="login-password" type="password" v-model="password" placeholder="Password">
+                <input id="login-password" type="password" v-model="password" placeholder="Password" required>
             </div>
         </div>
 

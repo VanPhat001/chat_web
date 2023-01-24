@@ -4,8 +4,10 @@
         <div class="box-info">
             <div class="row">
                 <div class="col">
-                    <img class="avatar"
-                        :src="accountMap.get(userInfo.userLeftId).avatar">
+                    <span class="image-box">
+                        <img class="avatar" :src="accountMap.get(userInfo.userLeftId).avatar">
+                        <div :class="{'active': accountMap.get(userInfo.userLeftId).timeLastActive === null}"></div>
+                    </span>
                     <p class="name">{{ 'ten user' }}</p>
                 </div>
                 <div class="col col-right">
@@ -40,10 +42,13 @@
         <div class="box-send-message">
             <div class="row">
                 <div class="col col-fill">
-                    <input type="text" @keydown.enter.prevent="sendMessage" v-model="text">
+                    <input type="text" @keydown.enter.prevent="sendMessage" v-model="text"
+                        placeholder="enter to submit">
                 </div>
                 <div class="col">
-                    <button @click="sendMessage">send</button>
+                    <button class="btn" @click="sendMessage">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -110,11 +115,10 @@ export default {
                     check = true
                 }
 
-                // this.$refs['audio'].src = `@\assets\mp3\pristine-609 (mp3cut.net).mp3`
-                // this.$refs['audio'].play()
                 if (check) {
                     const audio = new Audio(audioFile);
                     audio.play()
+                        .catch(err => console.log(err))
                 }
 
                 await delay(1500)
@@ -141,6 +145,7 @@ export default {
             this.messages = await messageService.getAllMessage(this.userInfo.userLeftId, this.userInfo.userRightId)
 
             this.receiveMessage()
+            this.scrollToLastMessage()
         } catch (error) {
             console.log(error)
         }
@@ -157,6 +162,24 @@ export default {
 
 
 <style lang="scss" scoped>
+.image-box {
+    position: relative;
+
+    .active {
+        position: absolute;
+        bottom: 10%;
+        right: 10%;
+        z-index: 1;
+        transform: translate(25%, 25%);
+        
+        --size: 16px;
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        background-color: rgba(70, 236, 84, 0.842);
+    }
+}
+
 .avatar {
     --image-size: 36px;
     width: var(--image-size);
@@ -274,10 +297,15 @@ export default {
     }
 
     .box-send-message {
+        padding: 5px 2px;
+        background-color: #146dd3;
+
         input {
             width: 100%;
             border: 1px solid gray;
-            padding: 0 6px;
+            padding: 0 8px;
+            border-radius: 20px;
+            color: rgb(41, 41, 41);
 
             &:focus {
                 border-color: blue;
@@ -285,8 +313,17 @@ export default {
         }
 
         button {
-            font-size: 16px;
-            padding: 4px 12px;
+            margin-left: 2px;
+            --size: 32px;
+            width: var(--size);
+            height: var(--size);
+            line-height: var(--size);
+            text-align: center;
+            // font-size: 16px;
+            border-radius: 20px;
+            border: none;
+            background-color: white;
+            color: #146dd3;
         }
     }
 }

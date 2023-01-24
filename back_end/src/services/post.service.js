@@ -9,9 +9,9 @@ class PostService {
     // get all
     async getAll() {
         const data = await this.Post
-                        .find({})
-                        .sort({ timePost: -1 })
-                        .toArray()
+            .find({})
+            .sort({ timePost: -1 })
+            .toArray()
         return data
     }
 
@@ -23,10 +23,22 @@ class PostService {
     // get by author
     async getByAuthor(author) {
         const data = await this.Post
-                        .find({ author: author })
-                        .sort({ timePost: -1 })
-                        .toArray()
+            .find({ author: author })
+            .sort({ timePost: -1 })
+            .toArray()
         return data
+    }
+
+    async getMany(idList) {
+        idList.forEach((item, index) => {
+            idList[index] = ObjectId(item)
+        })
+
+        return await this.Post.find({
+            _id: {
+                $in: idList
+            }
+        }).toArray()
     }
 
     // create post

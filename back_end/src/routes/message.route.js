@@ -1,5 +1,6 @@
 const messageController = require('../controllers/message.controller')
 const express = require('express')
+const MessageService = require('../services/message.service')
 const router = express.Router()
 
 
@@ -15,6 +16,21 @@ router.route('/')
             const data = await messageService.deleteAll()
 
             console.log('>> delete all messages')
+            res.send(data)
+        } catch (error) {
+            next(error)
+        }
+    })
+
+router.route('/many')
+    .post(async (req, res, next) => {
+        try {
+            const {idList} = req.body
+
+            const messageService = new MessageService()
+            const data = await messageService.getMany(idList)
+
+            console.log('>> get many messages')
             res.send(data)
         } catch (error) {
             next(error)

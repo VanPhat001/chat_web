@@ -19,9 +19,7 @@
 
 
 <script>
-import accountService from '../services/account.service'
 import friendService from '../services/friend.service'
-
 export default {
     emits: ['loaded'],
 
@@ -52,16 +50,14 @@ export default {
 
         const accountMap = this.$store.state.accountMap
 
-        const tasks2 = []
+        const friendIdList = []
         friendsData.forEach(friendId => {
             if (!accountMap.has(friendId)) {
-                tasks2.push(accountService.getById(friendId))
+                friendIdList.push(friendId)
             }
         })
-        const friendAccounts = await Promise.all(tasks2)
-        friendAccounts.forEach(acc => {
-            accountMap.set(acc._id, acc)
-        })
+
+        await this.$store.dispatch('pushToAccountMap', friendIdList)
 
         this.friends = friendsData
         this.$emit('loaded')
@@ -80,10 +76,6 @@ export default {
 <style lang="scss" scoped>
 .friend-list {
     border: 1px solid red;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
     overflow-y: auto;
     width: var(--friend-list-width);
     background-color: #fff;
