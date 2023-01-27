@@ -27,17 +27,15 @@ export default {
     width: 112px;
     height: 112px;
     border-radius: 50%;
-    border: 3px solid transparent;
-    border-top-color: blue;
+    // border: 3px solid transparent;
+    // border-top-color: blue;
 
-    animation: animation-loadding 1500ms infinite linear;
+    border: 28px dotted blue;
+
+    animation: animation-loadding 2000ms infinite linear;
 }
 
 @keyframes animation-loadding {
-    from {
-        transform: rotate(0);
-    }
-
     to {
         transform: rotate(360deg)
     }

@@ -17,13 +17,14 @@
                 </div>
 
                 <div class="controls">
-                    <span class="btn btn-like" :class="{ 'color-red': userLiked }" @click="likePost">
-                        <i class="fa-solid fa-heart"></i>
-                        <span>{{ post.likes.length }}</span>
+                    <span class="btn btn-like" :class="{ 'like': userLiked }" @click="likePost">
+                        <!-- <i class="fa-solid fa-heart"></i> -->
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>{{ post.likes.length }} lượt thích</span>
                     </span>
                     <span class="btn btn-comment" @click="openCommentBox">
                         <i class="fa-solid fa-comment"></i>
-                        <span>{{ post.comments.length }}</span>
+                        <span>{{ post.comments.length }} bình luận</span>
                     </span>
                 </div>
 
@@ -49,6 +50,16 @@
                     <div class="input-box">
                         <input type="text" placeholder="soạn comment" @keydown.enter="sendComment"
                             v-model="commentText">
+
+                        <!-- <div class="emoji-picker-box">
+                            <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmoji">
+                            </EmojiPicker>
+
+                            <button class="btn" @click="openOrCloseEmojiPicker">
+                                <i class="fa-solid fa-face-laugh-squint"></i>
+                            </button>
+                        </div> -->
+
                         <button class="btn" @click="sendComment">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
@@ -62,8 +73,23 @@
 
 
 <style lang="scss" scoped>
-.color-red {
-    color: rgb(211, 31, 31);
+.emoji-picker-box {
+    position: relative;
+
+    .emoji-picker {
+        position: absolute;
+        bottom: 100%;
+        right: 3px;
+        z-index: 1;
+    }
+
+    button {
+        height: 100%;
+    }
+}
+
+.like {
+    color: blue;
 }
 
 .card {
@@ -189,7 +215,6 @@
                 display: flex;
                 height: 30px;
                 border-radius: 30px;
-                overflow: hidden;
                 background-color: white;
 
                 input {
@@ -217,11 +242,15 @@
 
 
 <script>
+import EmojiPicker from './EmojiPicker.vue'
 import accountService from '../services/account.service'
 import commentService from '../services/comment.service'
 import postService from '../services/post.service'
 export default {
     emits: ['imageClick'],
+    components: {
+        EmojiPicker
+    },
     props: {
         pPost: { type: Object, default: {} }
     },
@@ -254,7 +283,8 @@ export default {
                 ]
             }),
             comments: [],
-            commentText: ''
+            commentText: '',
+            openEmojiPicker: false
         }
     },
     computed: {
@@ -277,6 +307,12 @@ export default {
         }
     },
     methods: {
+        openOrCloseEmojiPicker() {
+            this.openEmojiPicker = !this.openEmojiPicker
+        },
+        selectEmoji({emoji}) {
+            this.commentText += emoji
+        },
         getAccountMap(accId) {
             return this.$store.state.accountMap.get(accId)
         },

@@ -1,28 +1,39 @@
 <template>
     <div class="profile">
+        <!-- <EditProfile></EditProfile> -->
+
         <LoaddingComponent></LoaddingComponent>
 
-        <!-- <h1>profile</h1>
-        <p>{{ userProfile }}</p> -->
-
         <div class="user">
-            <img class="avatar" :src="userProfile?.avatar">
-            <div>
-                <p class="name">{{ fullName(userProfile) }}</p>
+            <div class="row">
+                <div class="col col-flex-1">
+                    <img class="user-background"
+                        src="https://scontent.fsgn6-1.fna.fbcdn.net/v/t1.6435-9/140422704_431868464924200_7674915151479696263_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=e3f864&_nc_ohc=XCy0TGEIdcwAX_IXtku&_nc_ht=scontent.fsgn6-1.fna&oh=00_AfDkoJUWgcA8bTCt-OFw7AhSOfxx3zPUrs77RkLnTanpXA&oe=63FB19E3">
+                </div>
+            </div>
 
-                <div>
+            <div class="row">
+                <div class="col col-flex-1">
+                    <img class="avatar" :src="userProfile?.avatar">
+                </div>
+
+                <div class="col col-flex-2">
+                    <p class="name">{{ fullName(userProfile) }}</p>
                     <div class="mutual-friends">
                         <!-- {{ mutualFriends }} -->
                         <router-link v-for="accId in mutualFriends" :key="accId" :to="`/profile/${accId}`">
                             <img :src="getAccount(accId).avatar" :title="fullName(getAccount(accId))">
                         </router-link>
                     </div>
+                </div>
+
+                <div class="col col-flex-2">
                     <template v-if="profileType !== ROLE.USER">
                         <button class="btn btn-friend dropdown-box" v-if="profileType === ROLE.FRIEND">
                             <i class="fa-solid fa-user-check"></i>
                             Bạn bè
 
-                            <DropdownComponent class="dropdown-component dropdown">
+                            <DropdownComponent class="dropdown">
                                 <button class="btn" @click="cancelAddFriendRequest">
                                     <i class="fa-solid fa-user-minus"></i>
                                     Hủy kết bạn
@@ -45,12 +56,14 @@
                             Nhắn tin
                         </button>
                     </template>
+
                     <template v-else>
                         <button class="btn btn-edit-account" @click="clickHandle">
                             Chỉnh sửa thông tin
                         </button>
                     </template>
                 </div>
+
             </div>
         </div>
 
@@ -59,7 +72,6 @@
         <template v-if="openMiniChat">
             <MiniChat class="mini-chat" :pUserInfo="miniChatUserData" @close="closeMiniChatHandle"></MiniChat>
         </template>
-
     </div>
 </template>
 
@@ -70,13 +82,15 @@ import PostList from './PostList.vue'
 import DropdownComponent from './DropdownComponent.vue'
 import LoaddingComponent from './LoaddingComponent.vue'
 import MiniChat from './MiniChat.vue'
+import EditProfile from './EditProfile.vue'
 
 export default {
     components: {
         PostList,
         DropdownComponent,
         LoaddingComponent,
-        MiniChat
+        MiniChat,
+        EditProfile
     },
     computed: {
         userLogin() {
@@ -223,6 +237,11 @@ export default {
     &:hover {
         .dropdown {
             display: block;
+
+            button {
+                background-color: #3a3b3c;
+                color: #fff;
+            }
         }
     }
 
@@ -257,71 +276,106 @@ export default {
 }
 
 .user {
-    display: flex;
-    align-items: flex-end;
     padding: 0 8%;
-    margin-top: 20px;
 
-    .avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-    }
+    .row {
+        display: flex;
 
-    div {
-        flex: 1;
-
-        .name {
-            font-weight: bold;
-            font-size: 28px;
-            margin-left: 8px;
+        .col.col-flex-1 {
+            flex: 1;
         }
 
-        div {
-            display: flex;
+        .col.col-flex-2 {
+            flex: 2;
+        }
 
-            .mutual-friends {
-                margin-right: auto;
+        .col.col-flex-3 {
+            flex: 3;
+        }
+    }
 
-                img {
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                }
+    .row:nth-child(1) {
+        .col {
+            .user-background {
+                height: 48vh;
+                width: 100%;
+                border-radius: 10px;
+            }
+        }
+    }
+
+    .row:nth-child(2) {
+        --user-name-height: 44px;
+        padding: 0 24px;
+
+        .col {
+            .avatar {
+                --size: 165px;
+                width: var(--size);
+                height: var(--size);
+                border-radius: 50%;
+                margin-top: -28%;
+                border: 6px solid #e7ece5;
+            }
+        }
+
+        .col {
+            .name {
+                font-weight: bold;
+                font-size: 32px;
+                height: var(--user-name-height);
+                line-height: var(--user-name-height);
             }
 
-            button {
-                color: white;
-                font-size: 15px;
-                font-weight: bold;
-                border: none;
-                border-radius: 6px;
+            .mutual-friends {
+                img {
+                    border-radius: 50%;
+                    --size: 44px;
+                    width: var(--size);
+                    height: var(--size);
+                }
+            }
+        }
 
-                outline: none;
-                padding: 8px 24px;
-                opacity: .8;
+        .col:has(button) {
+            text-align: right;
+            padding-top: var(--user-name-height);
+
+            button {
+                padding: 8px 20px;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+
+                &+button {
+                    margin-left: 4px;
+                }
+
+                &.btn-friend {
+                    background-color: #3a3b3c;
+                    color: white;
+                }
+
+                &.btn-cancel-request,
+                &.btn-add-friend,
+                &.btn-chat,
+                &.btn-edit-account {
+                    background-color: #2374e1;
+                    color: #fff;
+                }
 
                 &:hover {
                     opacity: 1;
                 }
 
-                &:not(:first-child) {
-                    margin-left: 3px;
-                }
-
-                &.btn-friend {
-                    background-color: rgb(172, 177, 176);
-                }
-
-                &.btn-edit-account,
-                &.btn-cancel-request,
-                &.btn-add-friend,
-                &.btn-chat {
-                    background-color: rgb(20, 109, 211);
+                &,
+                &:active {
+                    opacity: .8;
                 }
             }
+
+
         }
     }
-
 }
 </style>

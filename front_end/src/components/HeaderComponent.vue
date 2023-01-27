@@ -218,7 +218,6 @@ export default {
 .header-component {
     display: flex;
     justify-content: space-between;
-    border: 1px solid green;
     padding: 0 10px;
     align-items: center;
 

@@ -3,8 +3,9 @@
 		<header v-if="$route.path != '/' && $route.path != '/login'">
 			<HeaderComponent></HeaderComponent>
 		</header>
-
-		<main>
+		
+		
+		<main>			
 			<router-view :key="$route.fullPath"></router-view>
 		</main>
 	</div>
@@ -18,8 +19,9 @@
 	overflow: hidden;
 
 	header {
-		height: 50px;
-		background-color: #fff;
+		background-color: #242526;
+		color: white;
+		padding: 5px 0;
 	}
 
 	main {

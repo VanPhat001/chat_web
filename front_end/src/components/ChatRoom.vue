@@ -255,6 +255,18 @@ export default {
 
         openOrCloseEmojiPicker() {
             this.openEmojiPicker = !this.openEmojiPicker
+        },
+
+        openOrCloseSideBarRight() {
+            const el = this.$refs['sidebar-right']
+            if (el.classList.contains('animation-open')) {
+                el.classList.remove('animation-open')
+                el.classList.add('animation-close')
+            }
+            else {
+                el.classList.remove('animation-close')
+                el.classList.add('animation-open')
+            }
         }
     },
 
@@ -338,7 +350,7 @@ export default {
             </AccountList>
         </div>
 
-        <div class="sidebar">
+        <div class="sidebar sidebar-left">
             <div class="friend-chat-find">
                 <input type="text" placeholder="Nhập tên hoặc id tài khoản" v-model="findAccountText"
                     @keyup.enter="findAccountByNameOrId">
@@ -377,11 +389,13 @@ export default {
             <div class="receipient-bar">
                 <template v-if="selectFriendIndex < friendsChatId.length">
                     <img class="avatar" :src="selectFriend.avatar">
-                    <p class="name">{{ `${selectFriend.lastName} ${selectFriend.firstName}` }}</p>
-
-                    <router-link class="btn btn-info" :to="`/profile/${selectFriend._id}`">
-                        <i class="fa-solid fa-info"></i>
+                    <router-link :to="`/profile/${selectFriend._id}`">
+                        <p class="name">{{ `${selectFriend.lastName} ${selectFriend.firstName}` }}</p>
                     </router-link>
+
+                    <span class="btn btn-info" @click="openOrCloseSideBarRight">
+                        <i class="fa-solid fa-info"></i>
+                    </span>
                 </template>
             </div>
 
@@ -423,23 +437,31 @@ export default {
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col col-fill">
-                        <textarea placeholder="enter text here" v-model="text" @keydown="debounce"
+                    <div class="col col-fill pos-relative">
+                        <textarea placeholder="Press enter to submit" v-model="text" @keydown="debounce"
                             @keydown.enter.prevent="sendMessage"></textarea>
-                    </div>
-                    <div class="col emoji-picker-box">
-                        
-                        <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmojiHandle"></EmojiPicker>
 
-                        <button @click="openOrCloseEmojiPicker">
-                            <i class="fa-solid fa-face-smile"></i>
-                        </button>
+                        <div class="emoji-picker-box">
+                            <EmojiPicker v-show="openEmojiPicker" class="emoji-picker"
+                                @onSelectEmoji="selectEmojiHandle"></EmojiPicker>
+
+                            <button class="btn btn-emoji" @click="openOrCloseEmojiPicker">
+                                <i class="fa-solid fa-face-laugh-squint"></i>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="col">
-                        <button @click="sendMessage">send</button>
+                        <button @click="sendMessage">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div ref="sidebar-right" class="sidebar sidebar-right animation-close">
+            CHƯA CODE
         </div>
 
         <div ref="image-box" class="image-box close">
@@ -452,13 +474,36 @@ export default {
 
 
 <style lang="scss" scoped>
-.emoji-picker-box {
+.pos-relative {
     position: relative;
+}
+
+.emoji-picker-box {
+    position: absolute;
+    top: 50%;
+    right: 3px;
+    transform: translateY(-50%);
 
     .emoji-picker {
         position: absolute;
         bottom: 100%;
         right: 0;
+    }
+
+    .btn-emoji {
+        padding: 4px !important;
+        border: none;
+        background-color: transparent !important;
+        color: royalblue !important;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &,
+        &:active {
+            opacity: .8;
+        }
     }
 }
 
@@ -466,25 +511,47 @@ export default {
     display: none;
 }
 
-// ====================== layout ======================
-
 .chat-room {
     height: 100%;
     width: 100%;
     position: relative;
-
     display: flex;
+    background-color: #242526;
+    color: rgb(202, 201, 201);
 
     .sidebar {
-        width: 300px;
+        width: 265px;
     }
+
+    .sidebar-left {}
 
     .main-box {
         flex: 1;
     }
+
+    .sidebar-right {}
 }
 
-// ======================= public style =======================
+.animation-open {
+    animation: open 250ms 1 linear both;
+}
+
+@keyframes open {
+    from {
+        width: 0;
+    }
+}
+
+.animation-close {
+    animation: close 250ms 1 linear both;
+}
+
+@keyframes close {
+    to {
+        width: 0;
+    }
+}
+
 .model {
     .background {
         position: fixed;
@@ -564,10 +631,10 @@ img.avatar {
     background: #555;
 }
 
-// ======================= sidebar style =======================
-.sidebar {
+.sidebar-left {
     --find-friend-input-height: 36px;
     --friend-chat-padding-top-bottom: 16px;
+    border: 1px solid rgb(65, 65, 65);
 
     .friend-chat-find {
         position: relative;
@@ -576,13 +643,15 @@ img.avatar {
         input {
             height: var(--find-friend-input-height);
             border-radius: var(--find-friend-input-height);
-            border: 1px solid lightgray;
+            border: 2px solid transparent;
+            background-color: rgb(73, 73, 73);
+            color: rgb(216, 216, 216);
             width: 100%;
             padding: 0 32px 0 12px;
             font-size: 16px;
 
             &:focus {
-                border-color: #2a42ca;
+                border-color: lightgray;
             }
         }
 
@@ -604,7 +673,6 @@ img.avatar {
     }
 
     .friend-chat-list {
-        border: 1px solid blue;
         height: calc(100% - var(--find-friend-input-height) + calc(-1) * 2 * var(--friend-chat-padding-top-bottom));
         overflow-y: auto;
 
@@ -613,7 +681,7 @@ img.avatar {
             margin-top: 12px;
 
             &:hover {
-                background-color: rgb(221, 216, 216);
+                background-color: rgb(82, 82, 82);
                 cursor: pointer;
             }
 
@@ -679,16 +747,15 @@ img.avatar {
     }
 }
 
-// ======================= main-box style =======================
 .main-box {
     display: flex;
     flex-direction: column;
 
     .receipient-bar {
-        border: 1px solid blue;
         display: flex;
         align-items: center;
         padding: 4px 10px;
+        border: 1px solid rgb(65, 65, 65);
 
         .avatar {
             // --avatar-size: 40px;
@@ -708,7 +775,7 @@ img.avatar {
             height: 30px;
             line-height: 30px;
             text-align: center;
-            background-color: var(--color-3);
+            background-color: royalblue;
             color: white;
             opacity: .8;
 
@@ -721,12 +788,13 @@ img.avatar {
 
     .chat-box {
         flex: 1;
+        padding: 0 8px;
         overflow-y: auto;
 
         .message-info {
             display: flex;
             width: 66%;
-            margin-top: 4px;
+            margin-top: 2px;
 
             &.right+.right .avatar,
             &.left+.left .avatar {
@@ -750,13 +818,18 @@ img.avatar {
             }
 
             .message {
-                color: var(--color-text);
-                background: var(--color-2);
-                border-radius: 5px;
-                padding: 3px 8px;
+                border-radius: 6px;
                 margin: 0 3px;
-                max-width: 75%;
+                max-width: 72%;
             }
+
+            p.message {
+                padding: 3px 8px;
+                background: var(--color-2);
+                color: var(--color-text);
+            }
+
+            img.message {}
 
         }
     }
@@ -781,13 +854,26 @@ img.avatar {
         textarea {
             flex: 1;
             resize: none;
-            padding: 5px;
+            padding: 5px 35px 5px 5px;
+            background-color: rgb(73, 73, 73);
+            color: rgb(216, 216, 216);
         }
 
         button {
             font-size: 1.2rem;
             padding: 0 24px;
+            background-color: royalblue;
+            border: none;
+            color: rgb(216, 216, 216);
         }
     }
+}
+
+.sidebar-right {
+    border: 1px solid rgb(65, 65, 65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 </style>

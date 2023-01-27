@@ -1,8 +1,8 @@
 <template>
     <div class="home">
         <LoaddingComponent></LoaddingComponent>
-        <FriendList class="friend-list" @loaded="incCounter"></FriendList>
         <PostList class="post-list" @loaded="incCounter"></PostList>
+        <FriendList class="friend-list" @loaded="incCounter"></FriendList>
     </div>
 </template>
 
@@ -47,7 +47,8 @@ export default {
     display: flex;
 
     .friend-list {
-        width: 200px;
+        width: 240px;
+        // background-color: rgba(121, 121, 121, 0.5);
     }
 
     .post-list {
@@ -65,7 +66,8 @@ export default {
 
         /* Handle */
         &::-webkit-scrollbar-thumb {
-            background: #888;
+            // background: #888;
+            background: transparent;
             border-radius: 10px;
 
         }

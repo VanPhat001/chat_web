@@ -108,7 +108,6 @@ exports.findByNameOrId = async (req, res, next) => {
 // [POST] /api/account/many
 exports.findByIdArray = async (req, res, next) => {
     const { accIdList } = req.body
-    console.log(req.body)
 
     const AccountService = require('../services/account.service')
     const accountService = new AccountService()

@@ -7,15 +7,11 @@ export default {
     components: {
         RegisterComponent, LoaddingComponent
     },
-    computed: {
-        accountIdInLocalStore() {
-            return localStorage.getItem('chat-web-accountId')
-        }
-    },
     data() {
         return {
             username: 'phat',
             password: '1234',
+            saveAccount: false,
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
             xLoadding: 0,
@@ -25,17 +21,9 @@ export default {
     methods: {
         ...mapMutations(['setAccount']),
         ...mapActions(['connectSocket', 'userOnline']),
-        async login(accId = null) {
+        async login() {
             try {
                 const account = await accountService.findByUsernameAndPassword(this.username, this.password)
-
-                // if (accId === null) {
-                //     account = await accountService.findByUsernameAndPassword(this.username, this.password)
-                // }
-                // else {
-                //     account = await accountService.getById(accId)
-                //     // chưa xử lí accId không tồn tại
-                // }
 
                 const NOT_FOUND = ''
                 if (account === NOT_FOUND) {
@@ -69,9 +57,8 @@ export default {
             this.$refs['register-model'].classList.add('close')
         }
     },
-    // async created() {         
-        // await this.login(this.accountIdInLocalStore)
-    // },
+    async created() {         
+    },
     mounted() {
         document.querySelector('#login-username').focus()
 
@@ -112,7 +99,7 @@ export default {
 
         <div class="row">
             <div class="col">
-                <input type="checkbox" id="save-account">
+                <input type="checkbox" id="save-account" v-model="saveAccount">
                 <label for="save-account">Ghi nhớ tài khoản</label>
             </div>
         </div>

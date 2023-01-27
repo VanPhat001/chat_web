@@ -75,10 +75,8 @@ export default {
 
 <style lang="scss" scoped>
 .friend-list {
-    border: 1px solid red;
     overflow-y: auto;
     width: var(--friend-list-width);
-    background-color: #fff;
 
 
     .friend {

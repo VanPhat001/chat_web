@@ -6,7 +6,7 @@
                 <div class="col">
                     <span class="image-box">
                         <img class="avatar" :src="accountMap.get(userInfo.userLeftId).avatar">
-                        <div :class="{'active': accountMap.get(userInfo.userLeftId).timeLastActive === null}"></div>
+                        <div :class="{ 'active': accountMap.get(userInfo.userLeftId).timeLastActive === null }"></div>
                     </span>
                     <p class="name">{{ 'ten user' }}</p>
                 </div>
@@ -44,6 +44,15 @@
                 <div class="col col-fill">
                     <input type="text" @keydown.enter.prevent="sendMessage" v-model="text"
                         placeholder="enter to submit">
+
+                    <div class="emoji-picker-box">
+                        <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmoji">
+                        </EmojiPicker>
+
+                        <button class="btn" @click="openOrCloseEmojiPicker">
+                            <i class="fa-solid fa-face-laugh-squint"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="col">
                     <button class="btn" @click="sendMessage">
@@ -58,11 +67,15 @@
 
 
 <script>
+import EmojiPicker from './EmojiPicker.vue'
 import messageService from '../services/message.service'
 import { mapActions } from 'vuex'
 import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
 export default {
     emits: ['close'],
+    components: {
+        EmojiPicker
+    },
     props: {
         pUserInfo: {
             userLeftId: null,
@@ -73,7 +86,8 @@ export default {
         return {
             messages: [],
             text: '',
-            stopReceiveMessage: false
+            stopReceiveMessage: false,
+            openEmojiPicker: false
         }
     },
     computed: {
@@ -95,6 +109,14 @@ export default {
             setTimeout(() => {
                 this.$emit('close')
             }, 700)
+        },
+
+        selectEmoji({ emoji }) {
+            this.text += emoji
+        },
+
+        openOrCloseEmojiPicker() {
+            this.openEmojiPicker = !this.openEmojiPicker
         },
 
         scrollToLastMessage() {
@@ -162,6 +184,21 @@ export default {
 
 
 <style lang="scss" scoped>
+.hide {
+    display: none;
+}
+
+.emoji-picker-box {
+    position: relative;
+
+    .emoji-picker {
+        position: absolute;
+        bottom: 100%;
+        right: 3px;
+        zoom: .85;
+    }
+}
+
 .image-box {
     position: relative;
 
@@ -171,7 +208,7 @@ export default {
         right: 10%;
         z-index: 1;
         transform: translate(25%, 25%);
-        
+
         --size: 16px;
         width: var(--size);
         height: var(--size);
