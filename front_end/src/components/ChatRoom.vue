@@ -646,7 +646,8 @@ img.avatar {
             border: 2px solid transparent;
             background-color: rgb(73, 73, 73);
             color: rgb(216, 216, 216);
-            width: 100%;
+            width: 96%;
+            margin: 0 2%;
             padding: 0 32px 0 12px;
             font-size: 16px;
 
@@ -658,7 +659,7 @@ img.avatar {
         button {
             position: absolute;
             top: 50%;
-            right: 3px;
+            right: 2%;
             transform: translate(0, -50%);
 
             height: var(--find-friend-input-height);

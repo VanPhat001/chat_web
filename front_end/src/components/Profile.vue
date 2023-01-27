@@ -13,11 +13,11 @@
             </div>
 
             <div class="row">
-                <div class="col col-flex-1">
+                <div class="col">
                     <img class="avatar" :src="userProfile?.avatar">
                 </div>
 
-                <div class="col col-flex-2">
+                <div class="col col-flex-1">
                     <p class="name">{{ fullName(userProfile) }}</p>
                     <div class="mutual-friends">
                         <!-- {{ mutualFriends }} -->
@@ -27,7 +27,7 @@
                     </div>
                 </div>
 
-                <div class="col col-flex-2">
+                <div class="col col-flex-1">
                     <template v-if="profileType !== ROLE.USER">
                         <button class="btn btn-friend dropdown-box" v-if="profileType === ROLE.FRIEND">
                             <i class="fa-solid fa-user-check"></i>
@@ -276,7 +276,7 @@ export default {
 }
 
 .user {
-    padding: 0 8%;
+    padding: 0 6%;
 
     .row {
         display: flex;

@@ -7,6 +7,8 @@ import CreatePost from '../components/CreatePost.vue';
 import Profile from '../components/Profile.vue';
 import ContactBook from '../components/ContactBook.vue';
 import PostSingle from '../components/PostSingle.vue';
+import SuggestFriends from '../components/SuggestFriends.vue';
+import FriendRequests from '../components/FriendRequests.vue';
 
 
 const routes = [
@@ -29,7 +31,19 @@ const routes = [
         path: '/profile/:id', component: Profile
     },
     {
-        path: '/contact-book', component: ContactBook
+        path: '/contact-book', 
+        component: ContactBook,
+        name: 'ContactBook',
+        children: [
+            {
+                path: 'suggest',
+                component: SuggestFriends
+            },
+            {
+                path: 'request',
+                component: FriendRequests
+            }
+        ]
     },
     {
         path: '/post/:id', component: PostSingle
