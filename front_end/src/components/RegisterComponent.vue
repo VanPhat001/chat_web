@@ -69,15 +69,15 @@
 
             <div class="row">
                 <div class="col">
-                    <input type="radio" name="gender" id="gender-male" :value="CONSTANT.MALE" v-model="gender">
+                    <input type="radio" name="gender" id="gender-male" :value="GENDER.MALE" v-model="gender">
                     <label for="gender-male">Nam</label>
                 </div>
                 <div class="col">
-                    <input type="radio" name="gender" id="gender-female" :value="CONSTANT.FEMALE" v-model="gender">
+                    <input type="radio" name="gender" id="gender-female" :value="GENDER.FEMALE" v-model="gender">
                     <label for="gender-female">Nữ</label>
                 </div>
                 <div class="col">
-                    <input type="radio" name="gender" id="gender-other" :value="CONSTANT.OTHER" v-model="gender">
+                    <input type="radio" name="gender" id="gender-other" :value="GENDER.OTHER" v-model="gender">
                     <label for="gender-other">Khác</label>
                 </div>
             </div>
@@ -103,11 +103,7 @@ import accountService from '../services/account.service';
 export default {
     emits: ['closeModel'],
     data() {
-        const CONSTANT = Object.freeze({
-            MALE: 'male',
-            FEMALE: 'female',
-            OTHER: 'other'
-        })
+        const GENDER = this.$store.state.GENDER
         return {
             username: '',
             password: '',
@@ -116,8 +112,8 @@ export default {
             firstName: '',
             email: '',
             address: '',
-            gender: CONSTANT.MALE,
-            CONSTANT: CONSTANT,
+            gender: GENDER.MALE,
+            GENDER: GENDER,
             showPassword: false,
             showPassword2: false
         }

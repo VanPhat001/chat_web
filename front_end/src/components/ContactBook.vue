@@ -1,11 +1,15 @@
 <template>
     <div class="contact-book">
-        <div class="btn" :class="{ 'active': $route.path === '/contact-book/request' }">
-            <router-link to="/contact-book/request">Lời mời kết bạn</router-link>
+        <div class="btn" :class="{ 'active': $route.name === 'request' }">
+            <router-link :to="{ name: 'request' }">Lời mời kết bạn</router-link>
         </div>
 
-        <div class="btn" :class="{ 'active': $route.path === '/contact-book/suggest' }">
-            <router-link to="/contact-book/suggest">Gợi ý</router-link>
+        <div class="btn" :class="{ 'active': $route.name === 'suggest' }">
+            <router-link :to="{ name: 'suggest' }">Gợi ý</router-link>
+        </div>
+
+        <div class="btn" :class="{ 'active': $route.name === 'friends' }">
+            <router-link :to="{ name: 'friends' }">Bạn bè</router-link>
         </div>
 
 
@@ -17,8 +21,8 @@
 <script>
 export default {
     created() {
-        if (this.$route.path === '/contact-book') {
-            this.$router.push('/contact-book/request')
+        if (this.$route.name === 'contact-book') {
+            this.$router.push({name: 'request'})
         }
     }
 }

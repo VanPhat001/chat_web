@@ -18,8 +18,8 @@ exports.findAll = async (req, res, next) => {
 exports.create = async (req, res, next) => {
     try {
         const accountService = new AccountService()
-        const { username, password, firstName, lastName, email, avatar } = req.body
-        const data = await accountService.create(username, password, firstName, lastName, email, avatar)
+        const { username, password, firstName, lastName, email, avatar, background } = req.body
+        const data = await accountService.create(username, password, firstName, lastName, email, avatar, background)
 
         console.log('>> create account')
         res.send(data)

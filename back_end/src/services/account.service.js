@@ -67,7 +67,7 @@ class AccountService {
     }
 
     // create account
-    async create(username = '', password = '', firstName = '', lastName = '', email = '', avatar = '') {
+    async create(username = '', password = '', firstName = '', lastName = '', email = '', avatar = '', background='') {
         const account = {
             username: username,
             password: password,
@@ -77,15 +77,16 @@ class AccountService {
             email: email,
             gender: null,
             address: null,
-            avatar: avatar
+            avatar: avatar,
+            background: background
         }
 
         return await this.Account.insertOne(account)
     }
 
     // update by id
-    async updateById(id, { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar }) {
-        const account = { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar }
+    async updateById(id, { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar, background }) {
+        const account = { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar, background }
         Object.keys(account).forEach(item => {
             if (account[item] === undefined) {
                 delete account[item]

@@ -11,6 +11,7 @@
 
 
 <script>
+import helper from '../helper'
 export default {
     emits: ['loaded'],
     props: {
@@ -22,9 +23,7 @@ export default {
         }
     },
     methods: {
-        getFullName(account) {
-            return account.lastName + " " + account.firstName
-        },
+        getFullName: helper.fullName,
         selectAccount(index) {
             this.$emit('selectAccount', index)
         }

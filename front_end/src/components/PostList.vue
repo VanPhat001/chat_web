@@ -7,7 +7,7 @@
         </template>
 
         <div class="btn-fixed">
-            <router-link class="btn btn-create-post" to="/create-post">
+            <router-link class="btn btn-create-post" :to="{ name: 'create-post' }">
                 <i class="fa-solid fa-plus"></i>
             </router-link>
             <button class="btn btn-scroll" @click="scrollToTop">
@@ -89,11 +89,12 @@ export default {
 .image-box {
     position: fixed;
     inset: 0;
+    z-index: 1;
 
     &.close {
         display: none;
     }
-    
+
     .background-fullscreen {
         background-color: rgba(0, 0, 0, 0.301);
         width: 100%;

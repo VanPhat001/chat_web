@@ -3,7 +3,7 @@ import { io } from 'socket.io-client'
 import accountService from '../services/account.service'
 import messageService from '../services/message.service'
 
-import utils from '../utils'
+import helper from '../helper'
 
 const actions = {
     connectSocket(context) {
@@ -38,7 +38,7 @@ const actions = {
                     text: null,
                     image: null
                 }
-                if (await utils.isImgUrl(text)) {
+                if (await helper.isImgUrl(text)) {
                     content.image = text
                 }
                 else {
@@ -79,6 +79,20 @@ const actions = {
             }
         })
         console.log('>> finish: fetch accountMap', new Date().toLocaleString())
+    },
+
+    async loggedIn({ commit, dispatch }, account) {
+        console.log('in here')
+        commit('setAccount', account)
+
+        dispatch('connectSocket')
+
+        // await accountService.updateById(account._id, { timeLastActive: null })
+        // account.timeLastActive = null
+        await dispatch('userOnline')
+
+        // alert('Đăng nhập thành công!')
+        localStorage.setItem('chatweb-accid', account._id)
     },
 
     async userOnline(context) {

@@ -1,11 +1,14 @@
 <template>
     <div class="post-component">
 
-        <div class="card">
+        <div class="card" v-if="author._id">
             <div class="card-header">
                 <img class="avatar" :src="author.avatar">
                 <div class="info">
-                    <router-link class="name" :to="`/profile/${author._id}`">{{ fullName(author) }}</router-link>
+                    <!-- <router-link class="name" :to="`/profile/${author._id}`"> -->
+                    <router-link class="name" :to="{ name: 'profile', params: { 'id': author._id } }">
+                        {{ fullName(author) }}
+                    </router-link>
                     <p ref="count-time" class="count-time">{{ 'vừa xong' }}</p>
                 </div>
             </div>
@@ -34,7 +37,8 @@
                         <img class="avatar" :src="getAccountMap(comment.accountId).avatar">
 
                         <div class="info">
-                            <router-link class="name" :to="`/profile/${comment.accountId}`">
+                            <!-- <router-link class="name" :to="`/profile/${comment.accountId}`"> -->
+                            <router-link class="name" :to="{ name: 'profile', params: { 'id': comment.accountId } }">
                                 {{ fullName(getAccountMap(comment.accountId)) }}
                             </router-link>
                             <p class="content-text">{{ comment.text }}</p>
@@ -246,6 +250,7 @@ import EmojiPicker from './EmojiPicker.vue'
 import accountService from '../services/account.service'
 import commentService from '../services/comment.service'
 import postService from '../services/post.service'
+import helper from '../helper'
 export default {
     emits: ['imageClick'],
     components: {
@@ -255,33 +260,34 @@ export default {
         pPost: { type: Object, default: {} }
     },
     data() {
+        const constants = Object.freeze({
+            MINUTE: 60000,
+            HOUR: 60 * 60000,
+            DAY: 24 * 60 * 60000,
+            MONTH: 30 * 24 * 60 * 60000,
+            data: [
+                {
+                    value: 30 * 24 * 60 * 60000,
+                    suffix: 'tháng trước'
+                },
+                {
+                    value: 24 * 60 * 60000,
+                    suffix: 'ngày trước'
+                },
+                {
+                    value: 60 * 60000,
+                    suffix: 'giờ trước'
+                },
+                {
+                    value: 60000,
+                    suffix: 'phút trước'
+                },
+            ]
+        })
         return {
             author: {},
             intervalId: null,
-            constants: Object.freeze({
-                MINUTE: 60000,
-                HOUR: 60 * 60000,
-                DAY: 24 * 60 * 60000,
-                MONTH: 30 * 24 * 60 * 60000,
-                data: [
-                    {
-                        value: 30 * 24 * 60 * 60000,
-                        suffix: 'tháng trước'
-                    },
-                    {
-                        value: 24 * 60 * 60000,
-                        suffix: 'ngày trước'
-                    },
-                    {
-                        value: 60 * 60000,
-                        suffix: 'giờ trước'
-                    },
-                    {
-                        value: 60000,
-                        suffix: 'phút trước'
-                    },
-                ]
-            }),
+            constants: constants,
             comments: [],
             commentText: '',
             openEmojiPicker: false
@@ -310,7 +316,7 @@ export default {
         openOrCloseEmojiPicker() {
             this.openEmojiPicker = !this.openEmojiPicker
         },
-        selectEmoji({emoji}) {
+        selectEmoji({ emoji }) {
             this.commentText += emoji
         },
         getAccountMap(accId) {
@@ -323,9 +329,7 @@ export default {
             return this.$store.state.accountMap.has(accId)
         },
 
-        fullName(account) {
-            return `${account.lastName} ${account.firstName}`
-        },
+        fullName: helper.fullName,
         updateTime() {
             const diffMSec = Date.now() - new Date(this.post.timePost)
             const data = this.constants.data
@@ -333,7 +337,10 @@ export default {
                 const { value, suffix } = data[i];
                 if (diffMSec > value) {
                     const text = `${Math.round(diffMSec / value)} ${suffix}`
-                    this.$refs['count-time'].textContent = text
+
+                    try { this.$refs['count-time'].textContent = text }
+                    catch (error) { console.log(error) }
+                    
                     return
                 }
             }
@@ -430,10 +437,13 @@ export default {
         try {
             this.author = await accountService.getById(this.post.author)
 
-            this.updateTime()
+            // settimeout 0s để tránh tương tác vs DOM khi còn trong created()
+            setTimeout(() => {
+                this.updateTime()
+            }, 0)
             this.intervalId = setInterval(() => {
                 this.updateTime()
-            }, 20000);
+            }, 20000)
 
         } catch (error) {
             console.log(error)

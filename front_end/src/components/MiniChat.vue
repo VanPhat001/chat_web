@@ -8,7 +8,7 @@
                         <img class="avatar" :src="accountMap.get(userInfo.userLeftId).avatar">
                         <div :class="{ 'active': accountMap.get(userInfo.userLeftId).timeLastActive === null }"></div>
                     </span>
-                    <p class="name">{{ 'ten user' }}</p>
+                    <p class="name">{{ fullName(accountMap.get(userInfo.userLeftId)) }}</p>
                 </div>
                 <div class="col col-right">
                     <div class="btn btn-close" @click="closeHandle">
@@ -42,20 +42,22 @@
         <div class="box-send-message">
             <div class="row">
                 <div class="col col-fill">
-                    <input type="text" @keydown.enter.prevent="sendMessage" v-model="text"
-                        placeholder="enter to submit">
+                    <div class="input-box">
+                        <input type="text" @keydown.enter.prevent="sendMessage" v-model="text"
+                            placeholder="Enter to submit">
 
-                    <div class="emoji-picker-box">
-                        <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmoji">
-                        </EmojiPicker>
+                        <div class="emoji-picker-box">
+                            <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmoji">
+                            </EmojiPicker>
 
-                        <button class="btn" @click="openOrCloseEmojiPicker">
-                            <i class="fa-solid fa-face-laugh-squint"></i>
-                        </button>
+                            <button class="btn btn-emoji" @click="openOrCloseEmojiPicker">
+                                <i class="fa-solid fa-face-laugh-squint"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="col">
-                    <button class="btn" @click="sendMessage">
+                    <button class="btn btn-send" @click="sendMessage">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -71,6 +73,7 @@ import EmojiPicker from './EmojiPicker.vue'
 import messageService from '../services/message.service'
 import { mapActions } from 'vuex'
 import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
+import helper from '../helper'
 export default {
     emits: ['close'],
     components: {
@@ -100,6 +103,8 @@ export default {
     },
     methods: {
         ...mapActions(['pushToAccountMap', 'socketSendMessageToFriendChat', 'createAndSendMessage']),
+
+        fullName: helper.fullName,
 
         closeHandle() {
             this.$refs['mini-chat'].classList.add('animation-close')
@@ -337,19 +342,45 @@ export default {
         padding: 5px 2px;
         background-color: #146dd3;
 
-        input {
+        .input-box {
             width: 100%;
-            border: 1px solid gray;
-            padding: 0 8px;
-            border-radius: 20px;
-            color: rgb(41, 41, 41);
+            display: flex;
+            border-radius: 30px;
+            background-color: #fff;
 
-            &:focus {
-                border-color: blue;
+            input {
+                flex: 1;
+                padding: 0 3px 0 10px;
+                background-color: transparent;
+                border: none;
+            }
+
+            .emoji-picker-box {
+                .emoji-picker {
+                    box-shadow: 0 0 10px gray;
+                    border-radius: 6px;
+                }
+
+                .btn-emoji {
+                    background-color: transparent;
+                    border: none;
+                    height: 100%;
+                    font-size: 15px;
+                    color: #146dd3;
+
+                    &:hover {
+                        opacity: 1;
+                    }
+
+                    &, &:active {
+                        opacity: .8;
+                    }
+                }
             }
         }
 
-        button {
+
+        .btn-send {
             margin-left: 2px;
             --size: 32px;
             width: var(--size);

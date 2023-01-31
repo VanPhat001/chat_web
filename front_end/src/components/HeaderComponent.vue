@@ -1,15 +1,15 @@
 <template>
     <div class="header-component">
         <div class="left">
-            <router-link to="/home" title="goto home">
+            <router-link :to="{ name: 'home' }" title="goto home">
                 <i class="fa-solid fa-house router-link-ico"></i>
             </router-link>
 
-            <router-link to="/contact-book" title="goto contact book">
+            <router-link :to="{ name: 'contact-book' }" title="goto contact book">
                 <i class="fa-solid fa-address-book router-link-ico"></i>
             </router-link>
 
-            <router-link to="/chat-room" title="goto chat room">
+            <router-link :to="{ name: 'chat-room' }" title="goto chat room">
                 <i class="fa-regular fa-message router-link-ico"></i>
             </router-link>
 
@@ -21,16 +21,22 @@
                     <template v-slot:default>
                         <ul class="notify-list">
                             <li class="notify" v-for="notify in notifyList" :key="notify._id">
-                                <router-link :to="`/post/${notify.postId}`">
-                                    <template v-if="notify.type === 'comment'">
-                                        <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>comment bài
-                                            viết</b> của bạn
-                                    </template>
-                                    <template v-else>
-                                        <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>thích</b> bài
-                                        viết
-                                        của bạn
-                                    </template>
+                                <!-- <router-link :to="`/post/${notify.postId}`"> -->
+                                <router-link :to="{ name: 'post', params: { 'id': notify.postId } }">
+                                    <img class="avatar" :src="getAccountMap(notify.accountId).avatar" alt="...">
+
+                                    <p class="content">
+                                        <template v-if="notify.type === 'comment'">
+                                            <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>comment bài
+                                                viết</b> của bạn
+                                        </template>
+                                        <template v-else>
+                                            <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>thích</b>
+                                            bài
+                                            viết
+                                            của bạn
+                                        </template>
+                                    </p>
                                 </router-link>
                             </li>
                         </ul>
@@ -43,7 +49,8 @@
             </span>
         </div>
 
-        <router-link class="right" :to="`/profile/${loginAccount._id}`">
+        <!-- <router-link class="right" :to="`/profile/${loginAccount._id}`"> -->
+        <router-link class="right" :to="{ name: 'profile', params: { 'id': loginAccount._id } }">
             <p class="name">{{ fullName(loginAccount) }}</p>
             <img :src="loginAccount.avatar">
         </router-link>
@@ -53,7 +60,7 @@
 
 <script>
 import { mapActions } from 'vuex'
-import utils from '../utils'
+import helper from '../helper'
 import commentService from '../services/comment.service'
 import DropdownComponent from './DropdownComponent.vue'
 import audioFile from '../assets/mp3/relax-message-tone.mp3'
@@ -79,7 +86,11 @@ export default {
     methods: {
         ...mapActions(['userOffline', 'pushToAccountMap']),
 
-        fullName: utils.fullName,
+        fullName: helper.fullName,
+
+        getAccountMap(accId) {
+            return this.$store.state.accountMap.get(accId)
+        },
 
         showNotifyDropdown() {
             this.openDropdown = !this.openDropdown
@@ -89,14 +100,14 @@ export default {
             }
         },
         async logOutAccount() {
-            // localStorage.removeItem('chat-web-accountId')
+            localStorage.removeItem('chatweb-accid')
 
             this.$store.state.socket.disconnect()
             this.$store.state.socket = null
 
             await this.userOffline()
 
-            this.$router.push('/login')
+            this.$router.push({ name: 'login' })
             // window.open('/login', '_self')
         },
     },
@@ -161,23 +172,21 @@ export default {
         top: calc(100% + 3px);
         left: -20px;
 
-        // background-color: blue;
-        box-shadow: 1px 3px 10px grey;
-        background-color: gainsboro;
+        box-shadow: 1px 3px 10px rgb(94, 94, 94);
+        background-color: #242526;
+        color: rgb(192, 192, 192);
         width: 300px;
         height: 200px;
         z-index: 1;
 
         --arrow-x: 20px;
-        --arrow-color: gainsboro;
+        --arrow-color: #242526;
 
         .notify-list {
-            height: 100%;
+            max-height: 100%;
             overflow-y: auto;
             display: flex;
             flex-direction: column-reverse;
-            justify-content: flex-end;
-
 
             /* width */
             &::-webkit-scrollbar {
@@ -201,14 +210,29 @@ export default {
                 background: #555;
             }
 
-
             .notify {
                 // margin: 3px 0;
                 padding: 3px 5px;
-                background-color: gainsboro;
+                background-color: #242526;
 
                 &:hover {
-                    background-color: rgb(196, 194, 194);
+                    background-color: rgba(75, 75, 75, 0.616);
+                    color: #fff;
+                }
+
+                &>a {
+                    display: flex;
+
+                    .avatar {
+                        --size: 28px;
+                        width: var(--size);
+                        height: var(--size);
+                        border-radius: 50%;
+                    }
+
+                    .content {
+                        margin-left: 3px;
+                    }
                 }
             }
         }

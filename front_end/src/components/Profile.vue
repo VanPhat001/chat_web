@@ -1,14 +1,12 @@
 <template>
     <div class="profile">
-        <!-- <EditProfile></EditProfile> -->
-
         <LoaddingComponent></LoaddingComponent>
 
         <div class="user">
             <div class="row">
                 <div class="col col-flex-1">
                     <img class="user-background"
-                        src="https://scontent.fsgn6-1.fna.fbcdn.net/v/t1.6435-9/140422704_431868464924200_7674915151479696263_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=e3f864&_nc_ohc=XCy0TGEIdcwAX_IXtku&_nc_ht=scontent.fsgn6-1.fna&oh=00_AfDkoJUWgcA8bTCt-OFw7AhSOfxx3zPUrs77RkLnTanpXA&oe=63FB19E3">
+                        :src="userProfile?.background">
                 </div>
             </div>
 
@@ -21,7 +19,8 @@
                     <p class="name">{{ fullName(userProfile) }}</p>
                     <div class="mutual-friends">
                         <!-- {{ mutualFriends }} -->
-                        <router-link v-for="accId in mutualFriends" :key="accId" :to="`/profile/${accId}`">
+                        <router-link v-for="accId in mutualFriends" :key="accId"
+                            :to="{ name: 'profile', params: { 'id': accId } }">
                             <img :src="getAccount(accId).avatar" :title="fullName(getAccount(accId))">
                         </router-link>
                     </div>
@@ -82,15 +81,14 @@ import PostList from './PostList.vue'
 import DropdownComponent from './DropdownComponent.vue'
 import LoaddingComponent from './LoaddingComponent.vue'
 import MiniChat from './MiniChat.vue'
-import EditProfile from './EditProfile.vue'
+import helper from '../helper'
 
 export default {
     components: {
         PostList,
         DropdownComponent,
         LoaddingComponent,
-        MiniChat,
-        EditProfile
+        MiniChat
     },
     computed: {
         userLogin() {
@@ -101,18 +99,18 @@ export default {
         }
     },
     data() {
+        const role = Object.freeze({
+            USER: 'user',
+            FRIEND: 'friend',
+            REQUEST: 'request',
+            REQUESTED: 'requested',
+            OTHER: 'other'
+        })
         return {
             userProfile: null,
             mutualFriends: [],
-
-            ROLE: Object.freeze({
-                USER: 'user',
-                FRIEND: 'friend',
-                REQUEST: 'request',
-                REQUESTED: 'requested',
-                OTHER: 'other'
-            }),
-            profileType: 'user',
+            ROLE: role,
+            profileType: role.USER,
             loadedCounter: 0,
             openMiniChat: false,
             miniChatUserData: {
@@ -129,16 +127,12 @@ export default {
             const loadding = document.querySelector('.loadding-component')
             loadding?.remove()
         },
-        fullName(account) {
-            if (account)
-                return `${account.lastName} ${account.firstName}`
-            return ''
-        },
+        fullName: helper.fullName,
         getAccount(accId) {
             return this.$store.state.accountMap.get(accId)
         },
         clickHandle() {
-            alert('chưa code')
+            this.$router.push({ name: 'edit-profile' })
         },
         async addFriend() {
             console.log('>> add friend: from', this.userLogin._id, 'to', this.profileId)

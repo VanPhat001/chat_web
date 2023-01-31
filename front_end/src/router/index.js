@@ -1,52 +1,72 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import EmptyComponent from '../components/EmptyComponent.vue';
-import ChatRoom from '../components/ChatRoom.vue';
-import LoginComponent from '../components/LoginComponent.vue';
-import Home from '../components/Home.vue';
-import CreatePost from '../components/CreatePost.vue';
-import Profile from '../components/Profile.vue';
-import ContactBook from '../components/ContactBook.vue';
-import PostSingle from '../components/PostSingle.vue';
-import SuggestFriends from '../components/SuggestFriends.vue';
-import FriendRequests from '../components/FriendRequests.vue';
-
+// import .. from .. emptypage
 
 const routes = [
     {
-        path: '/', component: LoginComponent
+        path: '/', 
+        // component: () => import('../components/LoginComponent.vue'),
+        component: () => import('../components/LoaddingComponent.vue'),
     },
     {
-        path: '/login', component: LoginComponent
+        path: '/login', 
+        component: () => import('../components/LoginComponent.vue'),
+        name: 'login'
     },
     {
-        path: '/chat-room', component: ChatRoom
+        path: '/chat-room', 
+        component: () => import('../components/ChatRoom.vue'),
+        name: 'chat-room'
     },
     {
-        path: '/home', component: Home
+        path: '/home', 
+        component: () => import('../components/Home.vue'),
+        name: 'home'
     },
     {
-        path: '/create-post', component: CreatePost
+        path: '/create-post', 
+        component: () => import('../components/CreatePost.vue'),
+        name: 'create-post'
     },
     {
-        path: '/profile/:id', component: Profile
+        path: '/profile/:id', 
+        component: () => import('../components/Profile.vue'),
+        name: 'profile'
+    },
+    {
+        path: '/edit-profile', 
+        component: () => import('../components/EditProfile.vue'),
+        name: 'edit-profile'
     },
     {
         path: '/contact-book', 
-        component: ContactBook,
-        name: 'ContactBook',
+        component: () => import('../components/ContactBook.vue'),
+        name: 'contact-book',
         children: [
             {
                 path: 'suggest',
-                component: SuggestFriends
+                component: () => import('../components/SuggestFriends.vue'),
+                name: 'suggest'
             },
             {
                 path: 'request',
-                component: FriendRequests
+                component: () => import('../components/FriendRequests.vue'),
+                name: 'request'
+            },
+            {
+                path: 'friends',
+                component: () => import('../components/FriendList.vue'),
+                name: 'friends'
             }
         ]
     },
     {
-        path: '/post/:id', component: PostSingle
+        path: '/post/:id', 
+        name: 'post',
+        component: () => import('../components/PostSingle.vue')
+    },
+    {
+        path: '/test',
+        component: () => import('../components/ExpandBox.vue')
     }
 ]
 

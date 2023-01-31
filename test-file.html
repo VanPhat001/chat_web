@@ -1,12 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
-    
+
+    <style>
+        :root {
+            --bg-color: rgb(48, 48, 48);
+            --cd-border-color: royalblue;
+        }
+
+        body {
+            padding: 0;
+            height: 100vh;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cd-box {
+            position: relative;
+        }
+
+        .cd {
+            --size: 225px;
+            height: var(--size);
+            width: var(--size);
+            border-radius: 50%;
+            border: 5px var(--cd-border-color);
+            border-style: inset;
+        }
+
+        .circle {
+            background-color: var(--bg-color);
+            border: 2px solid var(--cd-border-color);
+            --size: 28px;
+            width: var(--size);
+            height: var(--size);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+
+    <div class="cd-player">
+        <div class="cd-box">
+            <img id="cd" class="cd" src="https://i.postimg.cc/43jzDjN9/Masou-Gakuen-Hx-H-full-2345417.jpg" alt="...">
+            <div class="circle"></div>
+        </div>
+        <button id="btnPlay">play</button>
+        <button id="btnPause">pause</button>
+    </div>
+
+
+    <script>
+        const btnPlay = document.getElementById('btnPlay')
+        const btnPause = document.getElementById('btnPause')
+        const cd = document.getElementById('cd')
+
+        function cdAnimationRotate() {
+            const keyframes = [{ transform: `rotate(360deg)` }]
+            const options = { duration: 30000, iterations: Infinity }
+            return cd.animate(keyframes, options)
+        }
+
+        const cdAnimate = cdAnimationRotate()
+
+        btnPlay.onclick = () => {
+            cdAnimate.play()
+        }
+
+        btnPause.onclick = () => {
+            cdAnimate.pause()
+        }
+    </script>
 </body>
+
 </html>

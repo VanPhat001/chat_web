@@ -1,10 +1,12 @@
 <template>
     <div class="friend-requests">
 
-        <h1 style="margin-top: 30px;">Lời mời kết bạn</h1>
+        <h1 style="margin: 30px 0 10px;">Lời mời kết bạn</h1>
         <div class="list add-friend-request-list">
+            <!-- <router-link class="row add-friend-request" v-for="(request, index) in addFriendRequest" :key="index"
+                :to="`/profile/${request}`"> -->
             <router-link class="row add-friend-request" v-for="(request, index) in addFriendRequest" :key="index"
-                :to="`/profile/${request}`">
+                :to="{name: 'profile', params: {'id': request}}">
                 <div class="left">
                     <img class="avatar" :src="getAccount(request).avatar">
                 </div>
@@ -24,6 +26,7 @@
 <script>
 import friendService from '../services/friend.service'
 import { mapActions } from 'vuex'
+import helper from '../helper'
 
 export default {
     data() {
@@ -45,9 +48,7 @@ export default {
         getAccount(accId) {
             return this.accountMap.get(accId)
         },
-        fullName(account) {
-            return `${account.lastName} ${account.firstName}`
-        },
+        fullName: helper.fullName,
         async cancelRequest(index) {
             try {
                 console.log("cancelRequest");

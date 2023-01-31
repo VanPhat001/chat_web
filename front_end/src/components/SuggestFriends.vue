@@ -1,9 +1,9 @@
 <template>
     <div class="suggest-friends">
-        <h1 style="margin-top: 30px;">Gợi ý</h1>
+        <h1 style="margin: 30px 0 10px;">Gợi ý</h1>
         <div class="list suggest-list">
             <router-link class="row suggest" v-for="(accId, index) in suggestAccountsId" :key="index"
-                :to="`/profile/${accId}`">
+                :to="{ name: 'profile', params: { 'id': accId } }">
                 <div class="left">
                     <img class="avatar" :src="getAccount(accId).avatar">
                 </div>
@@ -21,6 +21,7 @@
 import accountService from '../services/account.service';
 import friendService from '../services/friend.service';
 import { mapActions } from 'vuex';
+import helper from '../helper';
 
 export default {
     data() {
@@ -42,9 +43,7 @@ export default {
         getAccount(accId) {
             return this.accountMap.get(accId);
         },
-        fullName(account) {
-            return `${account.lastName} ${account.firstName}`;
-        },
+        fullName: helper.fullName,
         async sendAddFriendRequest(index) {
             try {
                 console.log("sendAddFriendRequest");

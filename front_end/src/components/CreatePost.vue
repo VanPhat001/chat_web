@@ -27,9 +27,9 @@ export default {
                     author: this.userLogin._id,
                     content: content
                 })
-                
+
                 alert('ok')
-                this.$router.push('/home')
+                this.$router.push({name: 'home'})
             } catch (error) {
                 console.log(error);
                 alert('error')
@@ -53,9 +53,8 @@ export default {
                 <textarea class="content" cols="30" rows="10" v-model="textContent"
                     placeholder="nhập nội dung"></textarea>
 
-                <label for="post-image">Image link:</label> 
-                <input id="post-image" type="text" v-model="imgLink"
-                    @keyup="selectImage">                    
+                <label for="post-image">Image link:</label>
+                <input id="post-image" type="text" v-model="imgLink" @keyup="selectImage">
                 <br>
 
                 <div style="text-align: center;">
@@ -64,8 +63,8 @@ export default {
             </div>
 
             <div class="box-footer">
-                <button :class="{ 'btn-post': true, 'btn': textContent.length > 0 || imgLink.length > 0 }" :disabled="textContent.length == 0 && imgLink.length == 0"
-                    @click="createPost">Đăng</button>
+                <button :class="{ 'btn-post': true, 'btn': textContent.length > 0 || imgLink.length > 0 }"
+                    :disabled="textContent.length == 0 && imgLink.length == 0" @click="createPost">Đăng</button>
             </div>
 
         </div>

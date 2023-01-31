@@ -36,13 +36,48 @@ import HeaderComponent from './components/HeaderComponent.vue'
 import LoaddingComponent from './components/LoaddingComponent.vue';
 
 import { mapActions } from 'vuex'
+import accountService from './services/account.service';
 export default {
 	components: {
 		HeaderComponent,
 		LoaddingComponent
 	},
+	computed: {
+		accountIdStore() {
+			return localStorage.getItem('chatweb-accid')
+		}
+	},
 	methods: {
-		...mapActions(['userOffline'])
+		...mapActions(['userOffline', 'loggedIn'])
+	},
+	async created() {
+		// kiểm tra có tài khoản được lưu trữ hay không
+		// - Nếu có: kiểm tra và đăng nhập
+		//	  + Nếu tài khoản đúng ---> render current link || render Home.vue
+		//	  + Nếu tài khoản sai  ---> render Login.vue
+		// - Nếu không: chuyển qua trang đăng nhập ---> render Login.vue
+		const accId = this.accountIdStore
+		if (accId === null) {
+			this.$router.push({name: 'login'})
+		}
+		else {
+			// alert('da co tai khoan dang nhap')
+			const account = await accountService.getById(accId)
+
+			const NOT_FOUND = ''
+			if (account === NOT_FOUND) {
+				this.$router.push({name: 'login'})
+			}
+			else {
+				await this.loggedIn(account)
+				console.log('>> dang nhap thanh cong')
+
+				const curUrl = window.location.pathname
+				if (curUrl === '/') {
+					this.$router.push({name: 'home'})
+				}
+			}
+		}
 	},
 	mounted() {
 		// tab đóng thì gửi dữ liệu user offline lên cho server

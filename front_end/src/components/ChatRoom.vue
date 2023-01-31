@@ -1,343 +1,3 @@
-<script>
-import AccountList from './AccountList.vue';
-import LoaddingComponent from './LoaddingComponent.vue'
-import EmojiPicker from './EmojiPicker.vue'
-import messageService from '../services/message.service'
-import accountService from '../services/account.service'
-import { mapGetters, mapActions } from 'vuex'
-import utils from '../utils'
-import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
-
-export default {
-    components: {
-        AccountList, LoaddingComponent, EmojiPicker
-    },
-    data() {
-        return {
-            friendsChatId: [],
-            notifyNumber: [],
-            selectFriendIndex: 0,
-            messages: [],
-            text: '',
-            findAccountText: '',
-            findAccounts: [],
-            lastMessages: [],
-            stopReceiveMessage: false,
-            loadedCounter: 0,
-            timeOutId: null,
-            openEmojiPicker: false
-        }
-    },
-
-    computed: {
-        ...mapGetters(['account']),
-        selectFriend() {
-            return this.getAccount(this.friendsChatId[this.selectFriendIndex])
-        },
-        accountLogin() {
-            return this.account
-        },
-        accountMap() {
-            return this.$store.state.accountMap
-        }
-    },
-
-    methods: {
-        ...mapActions(['socketSendMessageToFriendChat', 'createAndSendMessage']),
-
-        incCounter() {
-            this.loadedCounter++
-
-            if (this.loadedCounter == 2) {
-                try {
-                    const loadding = document.querySelector('.loadding-component')
-                    loadding.remove()
-                } catch (error) {
-                    console.log(error)
-                }
-            }
-        },
-
-        getAccount(accId) {
-            return this.accountMap.get(accId)
-        },
-
-        async setSelectFriendIndex(index) {
-            this.selectFriendIndex = index
-
-            try {
-                const data = await messageService.getAllMessage(this.account._id, this.selectFriend._id)
-                this.messages = data
-                this.notifyNumber[index] = 0
-            } catch (error) {
-                console.log(error)
-            }
-        },
-
-        getDateTime(dateTimeString) {
-            const date = new Date(dateTimeString)
-            return date.toLocaleString()
-        },
-
-        scrollToLastMessage() {
-            const element = document.getElementById('hidden-item')
-            element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
-        },
-
-        resetMessageContent() {
-            this.text = ''
-        },
-
-        async sendMessage() {
-            // tạo object message = {...} trên db
-            // tạo thành công thì tiến hành thông báo qua socket
-            // [chưa làm] tạo thành công nhưng gửi socket thất bại!!!
-
-            const message = await this.createAndSendMessage({
-                sender: this.accountLogin._id,
-                receipient: this.selectFriend._id,
-                text: this.text
-            })
-
-            if (message !== null) {
-                // render lại dữ liệu hiển thị
-                this.messages.push(message)
-                this.loadPreviewLastMessage()
-
-                // gửi dữ liệu qua socket
-                this.socketSendMessageToFriendChat(message)
-                this.resetMessageContent()
-            }
-        },
-
-        async receiveMessage() {
-            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-            const receiveMessageQueue = this.$store.state.receiveMessageQueue
-
-            // console.log('>> start receive message');
-            while (!this.stopReceiveMessage) {
-
-                // duyệt qua toàn bộ mảng receiveMessageQueue, xử lí từng thông điệp và loại bỏ nó ra khỏi mảng
-                // sau khi làm xong thì nghỉ 1s và duyệt lại từ đầu
-                let check = false
-                while (receiveMessageQueue.length > 0) {
-                    const message = receiveMessageQueue.shift()
-
-                    if (message.sender === this.accountLogin._id) {
-                        // BÊN NGƯỜI GỬI TIN NHẮN
-                        // thay đổi trạng thái đã gửi thành đã nhận 
-                    }
-                    else if (message.sender === this.selectFriend?._id) {
-                        // BÊN NGƯỜI NHẬN TIN NHẮN, CHAT-ROOM ĐANG HIỂN THỊ TIN NHẮN VỚI NGƯỜI GỬI
-                        // hiển thị tin nhắn vừa gửi trên giao diện
-                        this.messages.push(message)
-                        await this.loadPreviewLastMessage()
-                    }
-                    else {
-                        const friendId = message.sender
-                        const friendChat = await accountService.getById(friendId)
-
-                        // sender có trong friendsChat
-                        // ---> tăng notify lên 1
-                        // sender không có trong friendsChat
-                        // ---> thêm account bên sidebar và hiện notify có tin nhắn mới
-
-                        const indexFound = this.friendsChatId.findIndex(accId => accId == friendChat._id)
-                        const NOT_FOUND = -1
-
-                        if (indexFound === NOT_FOUND) {
-                            this.friendsChatId.push(friendChat._id)
-                            this.accountMap.set(friendChat._id, friendChat)
-                            this.notifyNumber.push(1)
-                        }
-                        else {
-                            this.notifyNumber[indexFound]++
-                        }
-
-                        await this.loadPreviewLastMessage()
-                    }
-
-                    check = true
-                }
-
-                if (check) {
-                    const audio = new Audio(audioFile)
-                    audio.play()
-                        .catch(err => console.log(err))
-                }
-
-                await delay(1500)
-            }
-            // console.log('>> stop receive message');
-        },
-
-        async loadPreviewLastMessage() {
-            const userId = this.account._id
-            const lastMessages = await messageService.getAllLastMessOfUserToFriends(userId)
-
-            const map = new Map()
-            lastMessages.forEach(mess => {
-                if (mess.sender == userId) {
-                    map.set(mess.receipient, mess)
-                }
-                else {
-                    map.set(mess.sender, mess)
-                }
-            })
-
-            const data = []
-            this.friendsChatId.forEach(friendId => {
-                data.push(map.get(friendId))
-            })
-
-            this.lastMessages = data
-        },
-
-        hideModel() {
-            const modelElement = this.$refs['model']
-            modelElement.classList.add('hide')
-        },
-
-        selectAccountHandle(index) {
-            const account = this.findAccounts[index]
-
-            const result = this.friendsChatId.find(friendId => friendId == account._id)
-            const NOT_FOUND = undefined
-
-            if (result === NOT_FOUND) {
-                this.friendsChatId.push(account._id)
-                this.accountMap.set(account._id, account)
-            }
-
-            this.hideModel()
-        },
-
-        async findAccountByNameOrId() {
-            try {
-                this.findAccounts = await accountService.findByNameOrId(this.findAccountText)
-
-                const modelElement = this.$refs['model']
-                modelElement.classList.remove('hide')
-            } catch (error) {
-                console.log(error)
-            }
-        },
-
-        debounce() {
-            clearTimeout(this.timeOutId)
-            this.timeOutId = setTimeout(async () => {
-                const isImage = await utils.isImgUrl(this.text)
-                if (isImage) {
-                    this.$refs['img'].height = 120
-                    this.$refs['img'].src = this.text
-                    this.scrollToLastMessage()
-                }
-                else {
-                    this.$refs['img'].height = 0
-                    this.$refs['img'].src = ''
-                }
-            }, 620)
-        },
-
-        closeImageFullScreen() {
-            this.$refs['image-box'].classList.add('close')
-        },
-
-        openImageFullScreen(imgLink) {
-            this.$refs['image-show'].src = imgLink
-            this.$refs['image-box'].classList.remove('close')
-        },
-
-        selectEmojiHandle({ icon }) {
-            // alert(icon)
-            this.text += icon
-        },
-
-        openOrCloseEmojiPicker() {
-            this.openEmojiPicker = !this.openEmojiPicker
-        },
-
-        openOrCloseSideBarRight() {
-            const el = this.$refs['sidebar-right']
-            if (el.classList.contains('animation-open')) {
-                el.classList.remove('animation-open')
-                el.classList.add('animation-close')
-            }
-            else {
-                el.classList.remove('animation-close')
-                el.classList.add('animation-open')
-            }
-        }
-    },
-
-    async created() {
-        const accountId = this.account._id
-        try {
-            // get friends chat id array ===> [ accountId ]
-            const friendsChatIdData = await messageService.getFriendsChat(accountId)
-            console.log(friendsChatIdData);
-
-            // fetch api to get friends chat account  ===> [ {_id, username, password...} ]
-            // const getFriendsChatPromises = []
-            // friendsChatIdData.forEach(friendId => {
-            //     if (!this.accountMap.has(friendId)) {
-            //         getFriendsChatPromises.push(accountService.getById(friendId))
-            //     }
-            // })
-
-            const accIdList = []
-            friendsChatIdData.forEach(friendId => {
-                if (!this.accountMap.has(friendId)) {
-                    accIdList.push(friendId)
-                }
-            })
-
-            // const data = await Promise.all(getFriendsChatPromises)
-            const data = await accountService.getMany(accIdList)
-            for (let i = 0; i < data.length; i++) {
-                const acc = data[i]
-                this.accountMap.set(acc._id, acc)
-            }
-
-            for (let i = 0; i < friendsChatIdData.length; i++) {
-                this.notifyNumber.push(0)
-                this.lastMessages.push({})
-            }
-
-            this.friendsChatId = friendsChatIdData
-            // await this.loadPreviewLastMessage()
-            // await this.setSelectFriendIndex(this.selectFriendIndex)
-
-            await Promise.all([
-                this.loadPreviewLastMessage(),
-                this.setSelectFriendIndex(this.selectFriendIndex)
-            ])
-
-            // lắng nghe dữ liệu trả về từ socket
-            this.receiveMessage()
-        } catch (error) {
-            console.log(error)
-        }
-
-        this.incCounter()
-    },
-
-    mounted() {
-        this.scrollToLastMessage()
-    },
-
-    updated() {
-        this.scrollToLastMessage()
-    },
-
-    unmounted() {
-        this.stopReceiveMessage = true
-    }
-}
-</script>
-
-
-
 <template >
     <div class="chat-room">
 
@@ -389,7 +49,7 @@ export default {
             <div class="receipient-bar">
                 <template v-if="selectFriendIndex < friendsChatId.length">
                     <img class="avatar" :src="selectFriend.avatar">
-                    <router-link :to="`/profile/${selectFriend._id}`">
+                    <router-link :to="{ name: 'profile', params: { 'id': selectFriend._id } }">
                         <p class="name">{{ `${selectFriend.lastName} ${selectFriend.firstName}` }}</p>
                     </router-link>
 
@@ -406,25 +66,33 @@ export default {
                     <template v-if="message.sender === accountLogin._id">
                         <img class="avatar" :src="accountLogin.avatar">
                         <template v-if="message.content.text">
-                            <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                            <div class="message">
+                                <p :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                            </div>
                         </template>
                         <template v-else>
-                            <img class="message" :src="message.content.image" :title="getDateTime(message.timeSend)"
-                                alt="lỗi hiển thị" @click="openImageFullScreen(message.content.image)">
+                            <div class="message">
+                                <img :src="message.content.image" :title="getDateTime(message.timeSend)"
+                                    alt="lỗi hiển thị" @click="openImageFullScreen(message.content.image)">
+                            </div>
                         </template>
                     </template>
 
                     <template v-else>
                         <img class="avatar" :src="selectFriend.avatar">
-                        <template v-if="message.content.text">
-                            <p class="message" :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
-                        </template>
-                        <template v-else>
-                            <img class="message" :src="message.content.image" :title="getDateTime(message.timeSend)"
-                                alt="lỗi hiển thị" @click="openImageFullScreen(message.content.image)">
-                        </template>
+
+                        <div class="message" v-if="message.content.text">
+                            <p :title="getDateTime(message.timeSend)">{{ message.content.text }}</p>
+                        </div>
+
+                        <div class="message" v-else>
+                            <img :src="message.content.image" :title="getDateTime(message.timeSend)" alt="lỗi hiển thị"
+                                @click="openImageFullScreen(message.content.image)">
+                        </div>
 
                     </template>
+
+                    <ExpandBox class="expand-box" @react="reactMessage"></ExpandBox>
                 </div>
 
                 <div id="hidden-item" style="height: 24px;"></div>
@@ -461,7 +129,44 @@ export default {
         </div>
 
         <div ref="sidebar-right" class="sidebar sidebar-right animation-close">
-            CHƯA CODE
+            <template v-if="selectFriend">
+                <img class="avatar" :src="selectFriend.avatar">
+                <router-link class="name" :to="{ name: 'profile', params: { 'id': selectFriend._id } }">
+                    {{ fullName(selectFriend) }}
+                </router-link>
+
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <td>{{ selectFriend._id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Họ</th>
+                        <td>{{ selectFriend.lastName }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tên</th>
+                        <td>{{ selectFriend.firstName }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ selectFriend.email ? selectFriend.email : '<chưa cập nhập>' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Giới tính</th>
+                        <td>{{ convertGenderToString(selectFriend.gender) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Địa chỉ</th>
+                        <td>{{ selectFriend.address ? selectFriend.address : '<chưa cập nhật>' }}</td>
+                    </tr>
+                </table>
+
+            </template>
+
+            <template v-else>
+                Chưa có dữ liệu
+            </template>
         </div>
 
         <div ref="image-box" class="image-box close">
@@ -474,6 +179,36 @@ export default {
 
 
 <style lang="scss" scoped>
+.message-info {
+    .react {
+        position: relative;
+
+        &::before {
+            content: '💝';
+            position: absolute;
+            bottom: 0;
+            display: flex;
+            width: 20px;
+            height: 20px;
+            // background-color: #242526d5;
+            border-radius: 50%;
+            z-index: 1;
+            zoom: 1.15;
+        }
+    }
+
+    &.left .react::before {
+        left: 100%;
+        transform: translate(-68%, 42%);
+    }
+
+    &.right .react::before {
+        right: 100%;
+        transform: translate(68%, 42%);
+    }
+}
+
+
 .pos-relative {
     position: relative;
 }
@@ -507,8 +242,34 @@ export default {
     }
 }
 
-.hide {
-    display: none;
+.model {
+    .background {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.39);
+        z-index: 1;
+    }
+
+    .account-list {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+
+        background-color: var(--color-background);
+        padding: 24px;
+        border: 1px solid red;
+        max-width: 80%;
+        max-height: 80%;
+        width: 400px;
+        height: 500px;
+    }
+}
+
+.hide,
+.close {
+    display: none !important;
 }
 
 .chat-room {
@@ -550,35 +311,6 @@ export default {
     to {
         width: 0;
     }
-}
-
-.model {
-    .background {
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.39);
-        z-index: 1;
-    }
-
-    .account-list {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1;
-
-        background-color: var(--color-background);
-        padding: 24px;
-        border: 1px solid red;
-        max-width: 80%;
-        max-height: 80%;
-        width: 400px;
-        height: 500px;
-    }
-}
-
-.close {
-    display: none !important;
 }
 
 .image-box {
@@ -795,13 +527,12 @@ img.avatar {
         .message-info {
             display: flex;
             width: 66%;
-            margin-top: 2px;
+            margin-top: 1px;
 
             &.right+.right .avatar,
             &.left+.left .avatar {
                 opacity: 0;
             }
-
 
             &.right {
                 margin-left: auto;
@@ -810,28 +541,43 @@ img.avatar {
 
             &.left {
                 .message {
-                    background-color: lightgray;
+                    p {
+                        background-color: lightgray;
+                    }
                 }
             }
 
             .avatar {
-                --avatar-size: 30px;
+                --avatar-size: 26px;
             }
 
             .message {
-                border-radius: 6px;
-                margin: 0 3px;
                 max-width: 72%;
+                margin: 0 1px;
+
+                p,
+                img {
+                    border-radius: 6px;
+                    width: 100%;
+                }
+
+                p {
+                    padding: 3px 8px;
+                    background-color: var(--color-2);
+                    color: var(--color-text)
+                }
             }
 
-            p.message {
-                padding: 3px 8px;
-                background: var(--color-2);
-                color: var(--color-text);
+            .expand-box {
+                --color: #888;
+                --box-color: #353738e3;
+                margin: auto 0;
+                display: none;
             }
 
-            img.message {}
-
+            &:hover .expand-box {
+                display: block;
+            }
         }
     }
 
@@ -873,8 +619,414 @@ img.avatar {
 .sidebar-right {
     border: 1px solid rgb(65, 65, 65);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     overflow: hidden;
+    padding-top: 10px;
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+    }
+
+    .name {
+        font-weight: bold;
+        color: #fff;
+        font-size: 24px;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &,
+        &:active {
+            opacity: .88;
+        }
+    }
+
+    table {
+        margin-top: 16px;
+
+        th {
+            text-align: left;
+            padding-right: 6px;
+        }
+    }
 }
 </style>
+
+
+<script>
+import AccountList from './AccountList.vue'
+import LoaddingComponent from './LoaddingComponent.vue'
+import EmojiPicker from './EmojiPicker.vue'
+import ExpandBox from './ExpandBox.vue';
+import messageService from '../services/message.service'
+import accountService from '../services/account.service'
+import { mapGetters, mapActions } from 'vuex'
+import helper from '../helper'
+import audioFile from '../assets/mp3/pristine-609 (mp3cut.net).mp3'
+
+export default {
+    components: {
+        AccountList,
+        LoaddingComponent,
+        EmojiPicker,
+        ExpandBox
+    },
+    data() {
+        return {
+            friendsChatId: [],
+            notifyNumber: [],
+            selectFriendIndex: 0,
+            messages: [],
+            text: '',
+            findAccountText: '',
+            findAccounts: [],
+            lastMessages: [],
+            stopReceiveMessage: false,
+            loadedCounter: 0,
+            timeOutId: null,
+            openEmojiPicker: false
+        }
+    },
+
+    computed: {
+        ...mapGetters(['account']),
+        GENDER() {
+            return this.$store.state.GENDER
+        },
+        selectFriend() {
+            return this.getAccount(this.friendsChatId[this.selectFriendIndex])
+        },
+        accountLogin() {
+            return this.account
+        },
+        accountMap() {
+            return this.$store.state.accountMap
+        }
+    },
+
+    methods: {
+        ...mapActions(['socketSendMessageToFriendChat', 'createAndSendMessage']),
+
+        fullName: helper.fullName,
+
+        convertGenderToString(gender) {
+            switch (gender) {
+                case this.GENDER.MALE:
+                    return 'Nam'
+
+                case this.GENDER.FEMALE:
+                    return 'Nữ'
+
+                case this.GENDER.OTHER:
+                    return 'Khác'
+
+                default:
+                    return '<chưa cập nhật>'
+            }
+        },
+
+        incCounter() {
+            this.loadedCounter++
+
+            if (this.loadedCounter == 2) {
+                try {
+                    const loadding = document.querySelector('.loadding-component')
+                    loadding.remove()
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+        },
+
+        getAccount(accId) {
+            return this.accountMap.get(accId)
+        },
+
+        async setSelectFriendIndex(index) {
+            this.selectFriendIndex = index
+
+            try {
+                const data = await messageService.getAllMessage(this.account._id, this.selectFriend._id)
+                this.messages = data
+                this.notifyNumber[index] = 0
+            } catch (error) {
+                console.log(error)
+            }
+        },
+
+        getDateTime(dateTimeString) {
+            const date = new Date(dateTimeString)
+            return date.toLocaleString()
+        },
+
+        scrollToLastMessage() {
+            const element = document.getElementById('hidden-item')
+            element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
+        },
+
+        resetMessageContent() {
+            this.text = ''
+        },
+
+        async sendMessage() {
+            // tạo object message = {...} trên db
+            // tạo thành công thì tiến hành thông báo qua socket
+            // [chưa làm] tạo thành công nhưng gửi socket thất bại!!!
+
+            const message = await this.createAndSendMessage({
+                sender: this.accountLogin._id,
+                receipient: this.selectFriend._id,
+                text: this.text
+            })
+
+            if (message !== null) {
+                // render lại dữ liệu hiển thị
+                this.messages.push(message)
+                this.loadPreviewLastMessage()
+
+                // gửi dữ liệu qua socket
+                this.socketSendMessageToFriendChat(message)
+                this.resetMessageContent()
+            }
+        },
+
+        async receiveMessage() {
+            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+            const receiveMessageQueue = this.$store.state.receiveMessageQueue
+
+            // console.log('>> start receive message');
+            while (!this.stopReceiveMessage) {
+
+                // duyệt qua toàn bộ mảng receiveMessageQueue, xử lí từng thông điệp và loại bỏ nó ra khỏi mảng
+                // sau khi làm xong thì nghỉ 1s và duyệt lại từ đầu
+                let check = false
+                while (receiveMessageQueue.length > 0) {
+                    const message = receiveMessageQueue.shift()
+
+                    if (message.sender === this.accountLogin._id) {
+                        // BÊN NGƯỜI GỬI TIN NHẮN
+                        // thay đổi trạng thái đã gửi thành đã nhận 
+                    }
+                    else if (message.sender === this.selectFriend?._id) {
+                        // BÊN NGƯỜI NHẬN TIN NHẮN, CHAT-ROOM ĐANG HIỂN THỊ TIN NHẮN VỚI NGƯỜI GỬI
+                        // hiển thị tin nhắn vừa gửi trên giao diện
+                        this.messages.push(message)
+                        await this.loadPreviewLastMessage()
+                    }
+                    else {
+                        const friendId = message.sender
+                        const friendChat = await accountService.getById(friendId)
+
+                        // sender có trong friendsChat
+                        // ---> tăng notify lên 1
+                        // sender không có trong friendsChat
+                        // ---> thêm account bên sidebar và hiện notify có tin nhắn mới
+
+                        const indexFound = this.friendsChatId.findIndex(accId => accId == friendChat._id)
+                        const NOT_FOUND = -1
+
+                        if (indexFound === NOT_FOUND) {
+                            this.friendsChatId.push(friendChat._id)
+                            this.accountMap.set(friendChat._id, friendChat)
+                            this.notifyNumber.push(1)
+                        }
+                        else {
+                            this.notifyNumber[indexFound]++
+                        }
+
+                        await this.loadPreviewLastMessage()
+                    }
+
+                    check = true
+                }
+
+                if (check) {
+                    const audio = new Audio(audioFile)
+                    audio.play()
+                        .catch(err => console.log(err))
+                }
+
+                await delay(1500)
+            }
+            // console.log('>> stop receive message');
+        },
+
+        async loadPreviewLastMessage() {
+            const userId = this.account._id
+            const lastMessages = await messageService.getAllLastMessOfUserToFriends(userId)
+
+            const map = new Map()
+            lastMessages.forEach(mess => {
+                if (mess.sender == userId) {
+                    map.set(mess.receipient, mess)
+                }
+                else {
+                    map.set(mess.sender, mess)
+                }
+            })
+
+            const data = []
+            this.friendsChatId.forEach(friendId => {
+                data.push(map.get(friendId))
+            })
+
+            this.lastMessages = data
+        },
+
+        hideModel() {
+            const modelElement = this.$refs['model']
+            modelElement.classList.add('hide')
+        },
+
+        selectAccountHandle(index) {
+            const account = this.findAccounts[index]
+
+            const result = this.friendsChatId.find(friendId => friendId == account._id)
+            const NOT_FOUND = undefined
+
+            if (result === NOT_FOUND) {
+                this.friendsChatId.push(account._id)
+                this.accountMap.set(account._id, account)
+            }
+
+            this.hideModel()
+        },
+
+        async findAccountByNameOrId() {
+            try {
+                this.findAccounts = await accountService.findByNameOrId(this.findAccountText)
+
+                const modelElement = this.$refs['model']
+                modelElement.classList.remove('hide')
+            } catch (error) {
+                console.log(error)
+            }
+        },
+
+        debounce() {
+            clearTimeout(this.timeOutId)
+            this.timeOutId = setTimeout(async () => {
+                const isImage = await helper.isImgUrl(this.text)
+                if (isImage) {
+                    this.$refs['img'].height = 120
+                    this.$refs['img'].src = this.text
+                    this.scrollToLastMessage()
+                }
+                else {
+                    this.$refs['img'].height = 0
+                    this.$refs['img'].src = ''
+                }
+            }, 620)
+        },
+
+        closeImageFullScreen() {
+            this.$refs['image-box'].classList.add('close')
+        },
+
+        openImageFullScreen(imgLink) {
+            this.$refs['image-show'].src = imgLink
+            this.$refs['image-box'].classList.remove('close')
+        },
+
+        selectEmojiHandle({ icon }) {
+            // alert(icon)
+            this.text += icon
+        },
+
+        openOrCloseEmojiPicker() {
+            this.openEmojiPicker = !this.openEmojiPicker
+        },
+
+        openOrCloseSideBarRight() {
+            const el = this.$refs['sidebar-right']
+            if (el.classList.contains('animation-open')) {
+                el.classList.remove('animation-open')
+                el.classList.add('animation-close')
+            }
+            else {
+                el.classList.remove('animation-close')
+                el.classList.add('animation-open')
+            }
+        },
+
+        reactMessage({ target }) {
+            const parent = target.parentElement
+            const message = parent.querySelector('.message')
+            if (message.classList.contains('react')) {
+                message.classList.remove('react')
+            }
+            else {
+                message.classList.add('react')
+            }
+        }
+    },
+
+    async created() {
+        const accountId = this.account._id
+        try {
+            // get friends chat id array ===> [ accountId ]
+            const friendsChatIdData = await messageService.getFriendsChat(accountId)
+            console.log(friendsChatIdData);
+
+            // fetch api to get friends chat account  ===> [ {_id, username, password...} ]
+            // const getFriendsChatPromises = []
+            // friendsChatIdData.forEach(friendId => {
+            //     if (!this.accountMap.has(friendId)) {
+            //         getFriendsChatPromises.push(accountService.getById(friendId))
+            //     }
+            // })
+
+            const accIdList = []
+            friendsChatIdData.forEach(friendId => {
+                if (!this.accountMap.has(friendId)) {
+                    accIdList.push(friendId)
+                }
+            })
+
+            // const data = await Promise.all(getFriendsChatPromises)
+            const data = await accountService.getMany(accIdList)
+            for (let i = 0; i < data.length; i++) {
+                const acc = data[i]
+                this.accountMap.set(acc._id, acc)
+            }
+
+            for (let i = 0; i < friendsChatIdData.length; i++) {
+                this.notifyNumber.push(0)
+                this.lastMessages.push({})
+            }
+
+            this.friendsChatId = friendsChatIdData
+            // await this.loadPreviewLastMessage()
+            // await this.setSelectFriendIndex(this.selectFriendIndex)
+
+            await Promise.all([
+                this.loadPreviewLastMessage(),
+                this.setSelectFriendIndex(this.selectFriendIndex)
+            ])
+
+            // lắng nghe dữ liệu trả về từ socket
+            this.receiveMessage()
+        } catch (error) {
+            console.log(error)
+        }
+
+        this.incCounter()
+    },
+
+    mounted() {
+        this.scrollToLastMessage()
+    },
+
+    updated() {
+        this.scrollToLastMessage()
+    },
+
+    unmounted() {
+        this.stopReceiveMessage = true
+    }
+}
+</script>

@@ -3,7 +3,12 @@ const state = {
     socket: null,
     receiveMessageQueue: [],
     accountMap: new Map(),
-    accountMap_intervalId: null
+    accountMap_intervalId: null,
+    GENDER: Object.freeze({
+        MALE: 'male',
+        FEMALE: 'female',
+        OTHER: 'other'
+    })
 }
 
 export default state

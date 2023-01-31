@@ -8,7 +8,7 @@ class AccountService {
         })
     }
 
-    async create({ username, password, firstName, lastName, email, avatar }) {
+    async create({ username, password, firstName, lastName, email, avatar, background}) {
         // [POST] /api/account/
         return (await this.api.post('/account', {
             username: username,
@@ -16,7 +16,8 @@ class AccountService {
             firstName: firstName,
             lastName: lastName,
             email: email,
-            avatar: avatar
+            avatar: avatar,
+            background: background
         })).data
     }
 
@@ -42,7 +43,7 @@ class AccountService {
         return (await this.api.get(`/account/text/${text}`)).data
     }
 
-    async updateById(accountId, { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar }) {
+    async updateById(accountId, { username, password, timeLastActive, firstName, lastName, email, gender, address, avatar, background }) {
         // [PATCH] /api/account/:id
         return (await this.api.patch(`/account/${accountId}`, {
             username: username,
@@ -53,7 +54,8 @@ class AccountService {
             email: email,
             gender: gender,
             address: address,
-            avatar: avatar
+            avatar: avatar,
+            background: background
         })).data
     }
 

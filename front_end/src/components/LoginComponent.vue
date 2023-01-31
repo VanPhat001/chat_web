@@ -9,8 +9,8 @@ export default {
     },
     data() {
         return {
-            username: 'phat',
-            password: '1234',
+            username: '',
+            password: '',
             saveAccount: false,
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
@@ -20,7 +20,7 @@ export default {
     },
     methods: {
         ...mapMutations(['setAccount']),
-        ...mapActions(['connectSocket', 'userOnline']),
+        ...mapActions(['connectSocket', 'userOnline', 'loggedIn']),
         async login() {
             try {
                 const account = await accountService.findByUsernameAndPassword(this.username, this.password)
@@ -30,16 +30,18 @@ export default {
                     alert('Tài khoản hoặc mật khẩu không hợp lệ!')
                 }
                 else {
-                    this.setAccount(account)
+                    // this.setAccount(account)
 
-                    this.connectSocket()
+                    // this.connectSocket()
 
-                    // await accountService.updateById(account._id, { timeLastActive: null })
-                    // account.timeLastActive = null
-                    await this.userOnline()
+                    // // await accountService.updateById(account._id, { timeLastActive: null })
+                    // // account.timeLastActive = null
+                    // await this.userOnline()
 
-                    // alert('Đăng nhập thành công!')
-                    this.$router.push('/home')
+                    // // alert('Đăng nhập thành công!')
+                    // localStorage.setItem('chatweb-accid', account._id)
+                    await this.loggedIn(account)
+                    this.$router.push({name: 'home'})
                 }
 
             } catch (error) {
