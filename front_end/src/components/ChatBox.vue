@@ -13,7 +13,9 @@
             </template>
         </div>
 
-        <div class="message-list">
+        <div class="message-list" :class="{'loadding': !loaded, 'loaded': loaded}">
+            <LoaddingComponent class="loadding-component view"></LoaddingComponent>
+
             <div :class="{ 'message-info': true, 'right': message.sender === accountLogin._id, 'left': message.sender === friendChatAcc._id }"
                 v-for="(message, index) in messages" :key="`${message._id}-${message.unsend}`" :data-index="index">
 
@@ -83,9 +85,268 @@
     </div>
 </template>
 
+<style lang="scss" scoped>
+.avatar {
+    --size: 30px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+}
+
+.loadding {
+    .loadding-component.view {
+        --background-color: #242526;
+        --color: white;
+    
+        position: absolute;
+        inset: 0;
+        z-index: 900;
+    }
+    
+    .message-info {
+        height: 0;
+    }
+}
+
+.loaded {
+    .loadding-component.view {
+        display: none;
+    }
+}
+
+
+.message-info {
+    .react {
+        position: relative;
+
+        &::before {
+            content: '💝';
+            position: absolute;
+            bottom: 0;
+            display: flex;
+            width: 20px;
+            height: 20px;
+            // background-color: #242526d5;
+            border-radius: 50%;
+            z-index: 1;
+            zoom: 1.15;
+        }
+    }
+
+    &.left .react::before {
+        left: 100%;
+        transform: translate(-68%, 42%);
+    }
+
+    &.right .react::before {
+        right: 100%;
+        transform: translate(68%, 42%);
+    }
+}
+
+
+.emoji-picker-box {
+    position: relative;
+
+    .emoji-picker {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+    }
+
+    .btn-emoji {
+        padding: 4px !important;
+        border: none;
+        background-color: transparent !important;
+        color: royalblue !important;
+        height: 100%;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &,
+        &:active {
+            opacity: .8;
+        }
+    }
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+
+    .receipient-bar {
+        display: flex;
+        align-items: center;
+        padding: 4px 10px;
+        border: 1px solid rgb(65, 65, 65);
+
+        .avatar {
+            --size: 44px;
+        }
+
+        .name {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .btn-info {
+            margin-left: auto;
+            border-radius: 50%;
+            font-size: 15px;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            background-color: royalblue;
+            color: white;
+            opacity: .8;
+
+            &:active,
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .message-list {
+        flex: 1;
+        padding: 0 8px;
+        overflow-y: auto;
+        position: relative;
+
+        .message-info {
+            display: flex;
+            width: 66%;
+            margin-top: 1px;
+
+            &.right+.right .avatar,
+            &.left+.left .avatar {
+                opacity: 0;
+                height: 1px;
+            }
+
+            &.right {
+                margin-left: auto;
+                flex-direction: row-reverse;
+            }
+
+            &.left {
+                .message {
+                    p {
+                        background-color: lightgray;
+                    }
+                }
+            }
+
+            .avatar {
+                --avatar-size: 26px;
+            }
+
+            .message {
+                max-width: 72%;
+                margin: 0 1px;
+
+                &.unsend p {
+                    opacity: .8;
+                }
+
+                p,
+                img {
+                    border-radius: 6px;
+                    width: 100%;
+                }
+
+                p {
+                    padding: 3px 8px;
+                    background-color: var(--color-2);
+                    color: var(--color-text)
+                }
+            }
+
+            .expand-box {
+                --color: #888;
+                --box-color: #353738e3;
+                margin: auto 0;
+                display: none;
+            }
+
+            &:hover .expand-box {
+                display: flex;
+            }
+        }
+    }
+
+    .messages-bar {
+        .row {
+            display: flex;
+
+            &>.col {
+                display: flex;
+
+                &.col-fill {
+                    flex: 1;
+                }
+            }
+        }
+
+        .row:nth-child(1) {
+            img {
+                // height: 80px;
+            }
+        }
+
+        .row:nth-child(2) {
+            border: 1px solid #555;
+            background-color: #494949;
+            border-radius: 2px;
+            overflow: hidden;
+
+            .col {
+                background-color: transparent;
+
+                textarea {
+                    flex: 1;
+                    resize: none;
+                    font-size: 15px;
+                    padding: 5px 3px;
+                    background-color: transparent;
+                    color: rgb(216, 216, 216);
+                    border: none;
+
+                    /* width */
+                    &::-webkit-scrollbar {
+                        width: 0;
+                    }
+                }
+
+                button {
+                    font-size: 1.2rem;
+                    background-color: transparent;
+                    border: none;
+                    color: royalblue;
+
+                    &:hover {
+                        opacity: .8;
+                    }
+
+                    &,
+                    &:active {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+}
+</style>
+
 <script>
 import ExpandBox from './ExpandBox.vue'
 import EmojiPicker from './EmojiPicker.vue'
+import LoaddingComponent from './LoaddingComponent.vue';
 import { mapActions } from 'vuex'
 import helper from '../helper'
 import messageService from '../services/message.service'
@@ -93,7 +354,8 @@ export default {
     emits: ['onInfoClick', 'sendMessage'],
     components: {
         ExpandBox,
-        EmojiPicker
+        EmojiPicker,
+        LoaddingComponent
     },
     props: {
         pFriendChatId: {
@@ -110,7 +372,8 @@ export default {
         return {
             messages: [],
             text: '',
-            openEmojiPicker: false
+            openEmojiPicker: false,
+            loaded: false,
         }
     },
     computed: {
@@ -258,6 +521,7 @@ export default {
         },
 
         async initData() {
+            this.loaded = false
             if (this.friendChatId) {
                 if (this.friendChatAcc === undefined) {
                     await this.pushToAccountMap([this.friendChatId])
@@ -265,6 +529,7 @@ export default {
 
                 this.messages = await this.loadMessages()
             }
+            this.loaded = true
         }
     },
     watch: {
@@ -290,238 +555,3 @@ export default {
 }
 </script>
 
-
-<style lang="scss" scoped>
-.avatar {
-    --size: 30px;
-    width: var(--size);
-    height: var(--size);
-    border-radius: 50%;
-}
-
-.message-info {
-    .react {
-        position: relative;
-
-        &::before {
-            content: '💝';
-            position: absolute;
-            bottom: 0;
-            display: flex;
-            width: 20px;
-            height: 20px;
-            // background-color: #242526d5;
-            border-radius: 50%;
-            z-index: 1;
-            zoom: 1.15;
-        }
-    }
-
-    &.left .react::before {
-        left: 100%;
-        transform: translate(-68%, 42%);
-    }
-
-    &.right .react::before {
-        right: 100%;
-        transform: translate(68%, 42%);
-    }
-}
-
-
-.emoji-picker-box {
-    position: relative;
-
-    .emoji-picker {
-        position: absolute;
-        bottom: 100%;
-        right: 0;
-    }
-
-    .btn-emoji {
-        padding: 4px !important;
-        border: none;
-        background-color: transparent !important;
-        color: royalblue !important;
-        height: 100%;
-
-        &:hover {
-            opacity: 1;
-        }
-
-        &,
-        &:active {
-            opacity: .8;
-        }
-    }
-}
-
-.chat-box {
-    display: flex;
-    flex-direction: column;
-
-    .receipient-bar {
-        display: flex;
-        align-items: center;
-        padding: 4px 10px;
-        border: 1px solid rgb(65, 65, 65);
-
-        .avatar {
-            --size: 44px;
-        }
-
-        .name {
-            margin-left: 10px;
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-
-        .btn-info {
-            margin-left: auto;
-            border-radius: 50%;
-            font-size: 15px;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
-            background-color: royalblue;
-            color: white;
-            opacity: .8;
-
-            &:active,
-            &:hover {
-                opacity: 1;
-            }
-        }
-    }
-
-    .message-list {
-        flex: 1;
-        padding: 0 8px;
-        overflow-y: auto;
-
-        .message-info {
-            display: flex;
-            width: 66%;
-            margin-top: 1px;
-
-            &.right+.right .avatar,
-            &.left+.left .avatar {
-                opacity: 0;
-                height: 1px;
-            }
-
-            &.right {
-                margin-left: auto;
-                flex-direction: row-reverse;
-            }
-
-            &.left {
-                .message {
-                    p {
-                        background-color: lightgray;
-                    }
-                }
-            }
-
-            .avatar {
-                --avatar-size: 26px;
-            }
-
-            .message {
-                max-width: 72%;
-                margin: 0 1px;
-
-                &.unsend p {
-                    opacity: .8;
-                }
-
-                p,
-                img {
-                    border-radius: 6px;
-                    width: 100%;
-                }
-
-                p {
-                    padding: 3px 8px;
-                    background-color: var(--color-2);
-                    color: var(--color-text)
-                }
-            }
-
-            .expand-box {
-                --color: #888;
-                --box-color: #353738e3;
-                margin: auto 0;
-                display: none;
-            }
-
-            &:hover .expand-box {
-                display: flex;
-            }
-        }
-    }
-
-    .messages-bar {
-        .row {
-            display: flex;
-
-            &>.col {
-                display: flex;
-
-                &.col-fill {
-                    flex: 1;
-                }
-            }
-        }
-
-        .row:nth-child(1) {
-            img {
-                // height: 80px;
-            }
-        }
-
-        .row:nth-child(2) {
-            border: 1px solid #555;
-            background-color: #494949;
-            border-radius: 2px;
-            overflow: hidden;
-
-            .col {
-                background-color: transparent;
-
-                textarea {
-                    flex: 1;
-                    resize: none;
-                    font-size: 15px;
-                    padding: 5px 3px;
-                    background-color: transparent;
-                    color: rgb(216, 216, 216);
-                    border: none;
-
-                    /* width */
-                    &::-webkit-scrollbar {
-                        width: 0;
-                    }
-                }
-
-                button {
-                    font-size: 1.2rem;
-                    background-color: transparent;
-                    border: none;
-                    color: royalblue;
-
-                    &:hover {
-                        opacity: .8;
-                    }
-
-                    &,
-                    &:active {
-                        opacity: 1;
-                    }
-                }
-            }
-        }
-    }
-}
-</style>
