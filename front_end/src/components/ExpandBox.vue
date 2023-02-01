@@ -1,8 +1,13 @@
 <template>
     <div ref="expand-box" class="expand-box">
-        <button class="btn btn-more" @click="moreHandle">
+        <button class="btn btn-more">
             <i class="fa-solid fa-ellipsis-vertical"></i>
+
+            <div class="more-box">
+                <button class="btn btn-unsend" @click="unsendMessage">xóa/thu hồi</button>
+            </div>
         </button>
+
         <button class="btn btn-react">
             <i class="fa-solid fa-face-laugh-squint"></i>
 
@@ -15,6 +20,7 @@
                 <span class="btn" title="giận dữ" @click="reactHandle">😡</span>
             </div>
         </button>
+
         <button class="btn btn-response" @click="responseHandle">
             <i class="fa-solid fa-share"></i>
         </button>
@@ -25,17 +31,21 @@
 
 <script>
 export default {
-    emits: ['react', 'response'],
+    emits: ['unsend', 'react', 'response'],
+    computed: {
+        expandBoxElement() {
+            return this.$refs['expand-box']
+        }
+    },
     methods: {
-        moreHandle() {
-            alert('chưa code')
+        unsendMessage() {
+            this.$emit('unsend', { target: this.expandBoxElement })
         },
         reactHandle() {
-            this.$emit('react', { target: this.$refs['expand-box'] })
+            this.$emit('react', { target: this.expandBoxElement })
         },
         responseHandle() {
-            alert('chưa code')
-            this.$emit('response')
+            this.$emit('response', { target: this.expandBoxElement })
         },
     }
 }
@@ -46,6 +56,7 @@ export default {
 .expand-box {
     --color: black;
     --box-color: blue;
+    display: flex;
 
     .btn-more,
     .btn-react,
@@ -62,6 +73,47 @@ export default {
 
         &:hover {
             background-color: #00000042;
+        }
+    }
+
+    .btn-more {
+        position: relative;
+
+        .more-box {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            z-index: 1;
+            display: none;
+
+            padding: 4px;
+            background-color: #000000dc;
+
+            &::before {
+                content: "";
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background-color: transparent;
+            }
+
+            .btn-unsend {
+                padding: 5px 10px;
+                white-space: nowrap;
+                font-weight: bold;
+            }
+        }
+
+        &:hover .more-box {
+            display: block;
+            animation: box-down;
+            animation-timing-function: linear;
+            animation-duration: 300ms;
+            animation-fill-mode: both;
+            animation-iteration-count: 1;
         }
     }
 
@@ -105,10 +157,21 @@ export default {
     }
 }
 
+.expand-box.reverse {
+    flex-direction: row-reverse;
+}
+
 @keyframes box-up {
     0% {
         opacity: 0.3;
         bottom: 40%;
+    }
+}
+
+@keyframes box-down {
+    0% {
+        opacity: 0.3;
+        top: 40%;
     }
 }
 

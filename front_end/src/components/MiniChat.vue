@@ -11,6 +11,9 @@
                     <p class="name">{{ fullName(accountMap.get(userInfo.userLeftId)) }}</p>
                 </div>
                 <div class="col col-right">
+                    <div class="btn btn-info" @click="infoHandle">
+                        <i class="fa-solid fa-info"></i>
+                    </div>
                     <div class="btn btn-close" @click="closeHandle">
                         <i class="fa-solid fa-xmark"></i>
                     </div>
@@ -105,6 +108,10 @@ export default {
         ...mapActions(['pushToAccountMap', 'socketSendMessageToFriendChat', 'createAndSendMessage']),
 
         fullName: helper.fullName,
+
+        infoHandle() {
+            alert('Vào chat-room để trải nghiệm nhiều tính năng hơn...')
+        },
 
         closeHandle() {
             this.$refs['mini-chat'].classList.add('animation-close')
@@ -275,10 +282,7 @@ export default {
                     font-size: 17px;
                 }
 
-                .btn-close {
-                    font-size: 24px;
-                    margin-right: 6px;
-
+                .btn-info, .btn-close {
                     &:hover {
                         opacity: 1;
                     }
@@ -288,11 +292,27 @@ export default {
                         opacity: .8;
                     }
                 }
+                
+                .btn-info {
+                    font-size: 12px;
+                    margin-right: 8px;
+                    border-radius: 50%;
+                    background-color: #0b3e79;
+                    --size: 23px;
+                    width: var(--size);
+                    height: var(--size);
+                    line-height: var(--size);
+                    text-align: center;
+                }
+
+                .btn-close {
+                    font-size: 22px;
+                    margin-right: 6px;
+                }
+
             }
 
         }
-
-
     }
 
     .box-chat {

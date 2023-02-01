@@ -3,42 +3,42 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
-        path: '/', 
+        path: '/',
         // component: () => import('../components/LoginComponent.vue'),
         component: () => import('../components/LoaddingComponent.vue'),
     },
     {
-        path: '/login', 
+        path: '/login',
         component: () => import('../components/LoginComponent.vue'),
         name: 'login'
     },
     {
-        path: '/chat-room', 
+        path: '/chat-room',
         component: () => import('../components/ChatRoom.vue'),
         name: 'chat-room'
     },
     {
-        path: '/home', 
+        path: '/home',
         component: () => import('../components/Home.vue'),
         name: 'home'
     },
     {
-        path: '/create-post', 
+        path: '/create-post',
         component: () => import('../components/CreatePost.vue'),
         name: 'create-post'
     },
     {
-        path: '/profile/:id', 
+        path: '/profile/:id',
         component: () => import('../components/Profile.vue'),
         name: 'profile'
     },
     {
-        path: '/edit-profile', 
+        path: '/edit-profile',
         component: () => import('../components/EditProfile.vue'),
         name: 'edit-profile'
     },
     {
-        path: '/contact-book', 
+        path: '/contact-book',
         component: () => import('../components/ContactBook.vue'),
         name: 'contact-book',
         children: [
@@ -60,13 +60,18 @@ const routes = [
         ]
     },
     {
-        path: '/post/:id', 
+        path: '/post/:id',
         name: 'post',
         component: () => import('../components/PostSingle.vue')
     },
     {
         path: '/test',
-        component: () => import('../components/ExpandBox.vue')
+        component: () => import('../components/FriendChatList.vue'),
+        props: {
+            pFriendsChatId: [],
+            pLastMessages: [],
+            pNotifyNumber: [],
+        }
     }
 ]
 

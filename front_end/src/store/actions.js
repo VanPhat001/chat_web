@@ -81,8 +81,7 @@ const actions = {
         console.log('>> finish: fetch accountMap', new Date().toLocaleString())
     },
 
-    async loggedIn({ commit, dispatch }, account) {
-        console.log('in here')
+    async loggedIn({ state, commit, dispatch }, account) {
         commit('setAccount', account)
 
         dispatch('connectSocket')
@@ -92,6 +91,7 @@ const actions = {
         await dispatch('userOnline')
 
         // alert('Đăng nhập thành công!')
+        state.accountMap.set(account._id, account)
         localStorage.setItem('chatweb-accid', account._id)
     },
 

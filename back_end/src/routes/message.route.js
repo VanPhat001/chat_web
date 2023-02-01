@@ -3,6 +3,25 @@ const express = require('express')
 const MessageService = require('../services/message.service')
 const router = express.Router()
 
+// router.route('/update/all/test')
+//     .get(async (req, res, next) => {
+//         try {
+//             const messageService = new MessageService()
+//             const Message = messageService.Message
+
+//             const data = await Message.updateMany(
+//                 {}, 
+//                 {$set: {
+//                     unsend: false,
+//                     response: null
+//                 }})
+
+//             console.log('ok')
+//             res.send(data)
+//         } catch (error) {
+//             next(error)
+//         }
+//     })
 
 // route: /api/message/
 router.route('/')
@@ -25,7 +44,7 @@ router.route('/')
 router.route('/many')
     .post(async (req, res, next) => {
         try {
-            const {idList} = req.body
+            const { idList } = req.body
 
             const messageService = new MessageService()
             const data = await messageService.getMany(idList)
@@ -41,6 +60,17 @@ router.route('/many')
 router.route('/:id')
     .get(messageController.findById)
     .delete(messageController.deleteById)
+    .patch(async (req, res, next) => {
+        try {
+            const messageService = new MessageService()
+            const data = await messageService.updateById(req.params.id, req.body)
+
+            console.log('>> [PATCH] update message by id')
+            res.send(data)
+        } catch (error) {
+            next(error)
+        }
+    })
 
 // route: /api/message/acc/:id1/:id2
 router.route('/acc/:id1/:id2')

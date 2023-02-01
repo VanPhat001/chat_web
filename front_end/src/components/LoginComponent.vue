@@ -21,7 +21,13 @@ export default {
     methods: {
         ...mapMutations(['setAccount']),
         ...mapActions(['connectSocket', 'userOnline', 'loggedIn']),
+        
         async login() {
+            if (this.username === '' || this.password === '') {
+                alert('Tài khoản hoặc mật khẩu không được bỏ trống!')
+                return
+            }
+
             try {
                 const account = await accountService.findByUsernameAndPassword(this.username, this.password)
 

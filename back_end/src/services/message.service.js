@@ -29,16 +29,32 @@ class MessageService {
     }
 
     // create message
-    async create(sender, receipient, content) {
+    async create(sender, receipient, content, unsend = false, response = null) {
         const timeSend = new Date()
         const message = {
             sender: sender,
             receipient: receipient,
             content: content,
-            timeSend: timeSend
+            timeSend: timeSend,
+            unsend: unsend,
+            response: response
         }
 
         return await this.Message.insertOne(message)
+    }
+
+    // update by id
+    async updateById(id, { sender, receipient, content, timeSend, unsend, response }) {
+        const message = { sender, receipient, content, timeSend, unsend, response }
+        Object.keys(message).forEach(item => {
+            if (message[item] === undefined) {
+                delete message[item]
+            }
+        })
+
+        return await this.Message.updateOne(
+            { _id: ObjectId(id) },
+            { $set: message })
     }
 
     // delete by id

@@ -27,12 +27,24 @@ class MessageService {
     async createMessage(sender, receipient, content) {
         // [POST] /api/message/
         return (await this.api.post('/message', {
-            sender: sender, 
-            receipient: receipient, 
+            sender: sender,
+            receipient: receipient,
             content: content
         })).data
     }
-    
+
+    async updateById(id, { sender, receipient, content, timeSend, unsend, response }) {
+        // [PATCH] /api/message/:id
+        return (await this.api.patch(`/message/${id}`, {
+            sender: sender, 
+            receipient: receipient, 
+            content: content, 
+            timeSend: timeSend, 
+            unsend: unsend, 
+            response: response
+        })).data
+    }
+
     async getAllLastMessOfUserToFriends(id) {
         // [GET] /api/message/last/acc/:id
         return (await this.api.get(`/message/last/acc/${id}`)).data

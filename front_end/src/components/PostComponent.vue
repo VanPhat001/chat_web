@@ -232,7 +232,7 @@
                     border: none;
                     background-color: transparent;
                     font-size: 16px;
-                    padding: 0 12px;
+                    padding: 0 8px 0 0;
 
                     &:hover {
                         color: cornflowerblue
@@ -298,6 +298,10 @@ export default {
             return this.$store.state.account
         },
         post() {
+            // const post = this.pPost
+            // const nd = new Date(post.timePost)
+            // nd.setDate(nd.getDate() - 2)
+            // post.timePost =  nd.toString()
             return this.pPost
         },
         userLiked() {
@@ -335,7 +339,7 @@ export default {
             const data = this.constants.data
             for (let i = 0; i < data.length; i++) {
                 const { value, suffix } = data[i];
-                if (diffMSec > value) {
+                if (diffMSec >= value) {
                     const text = `${Math.round(diffMSec / value)} ${suffix}`
 
                     try { this.$refs['count-time'].textContent = text }

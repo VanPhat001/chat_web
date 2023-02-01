@@ -45,9 +45,9 @@ exports.findAll = async (req, res, next) => {
 // [POST] /api/message/
 exports.create = async (req, res, next) => {
     try {
-        const { sender, receipient, content } = req.body
+        const { sender, receipient, content, unsend, response } = req.body
         const messageService = new MessageService()
-        const data = await messageService.create(sender, receipient, content)
+        const data = await messageService.create(sender, receipient, content, unsend || false, response || null)
 
         console.log('>> create message');
         res.send(data)
