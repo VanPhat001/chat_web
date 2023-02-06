@@ -23,7 +23,7 @@
                 :pNotifyNumber="notifyNumber" @onSelectFriend="setSelectFriendIndex" />
         </div>
 
-        <ChatBox class="chat-box" :pFriendChatId="selectFriend?._id" :pNewMessage="newMessage" @onInfoClick="openOrCloseSideBarRight" />
+        <ChatBox class="chat-box" :pFriendChatId="selectFriend?._id" :pNewMessage="newMessage" @onInfoClick="openOrCloseSideBarRight" @onImageClick="openImageFullScreen"/>
 
         <div ref="sidebar-right" class="sidebar sidebar-right animation-close">
             <template v-if="selectFriend">

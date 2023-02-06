@@ -3,9 +3,10 @@
 		<header v-if="$route.path != '/' && $route.path != '/login'">
 			<HeaderComponent></HeaderComponent>
 		</header>
-		
-		
-		<main>			
+
+		<main>
+			<IncommingCall v-if="showIncommingCall" class="incomming-call" :pAccId="$store.state.userCallId"
+				@onAcceptCall="acceptCall" @onCancelCall="cancelCall"></IncommingCall>
 			<router-view :key="$route.fullPath"></router-view>
 		</main>
 	</div>
@@ -27,28 +28,85 @@
 	main {
 		flex: 1;
 		overflow: auto;
+		position: relative;
+
+		.incomming-call {
+			position: absolute;
+			top: 2px;
+			left: 50%;
+			transform: translate(-50%, 0);
+			z-index: 1;
+
+			animation: open .44s linear;
+			box-shadow: 0 0 10px rgb(90, 86, 86);
+		}
+
+	}
+
+}
+
+@keyframes open {
+	from {
+		transform: translate(-50%, -100%);
+		opacity: .3;
 	}
 }
 </style>
 
 <script>
 import HeaderComponent from './components/HeaderComponent.vue'
-import LoaddingComponent from './components/LoaddingComponent.vue';
+import LoaddingComponent from './components/LoaddingComponent.vue'
+import IncommingCall from './components/IncommingCall.vue'
 
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import accountService from './services/account.service';
 export default {
 	components: {
 		HeaderComponent,
-		LoaddingComponent
+		LoaddingComponent,
+		IncommingCall
 	},
 	computed: {
 		accountIdStore() {
 			return localStorage.getItem('chatweb-accid')
+		},
+		showIncommingCall() {
+			return this.$store.state.showIncommingCall
 		}
 	},
 	methods: {
-		...mapActions(['userOffline', 'loggedIn'])
+		...mapActions(['userOffline', 'loggedIn']),
+		...mapMutations(['setShowIncommingCall']),
+
+		acceptCall(userCallId) {
+			console.log('accept', userCallId)
+
+			this.setShowIncommingCall(false)
+
+
+			// this.$router.push({
+			// 	name: 'call',
+			// 	params: {
+			// 		userId: userCallId,
+			// 		isCaller: false
+			// 	}
+			// })
+
+			const routeData = this.$router.resolve({
+				name: 'call',
+				params: {
+					userId: userCallId,
+					isCaller: false
+				}
+			})
+			window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
+		},
+
+		cancelCall(userCallId) {
+			console.log('cancel', userCallId)
+
+			this.setShowIncommingCall(false)
+		}
 	},
 	async created() {
 		// kiểm tra có tài khoản được lưu trữ hay không
@@ -58,7 +116,7 @@ export default {
 		// - Nếu không: chuyển qua trang đăng nhập ---> render Login.vue
 		const accId = this.accountIdStore
 		if (accId === null) {
-			this.$router.push({name: 'login'})
+			this.$router.push({ name: 'login' })
 		}
 		else {
 			// alert('da co tai khoan dang nhap')
@@ -66,7 +124,7 @@ export default {
 
 			const NOT_FOUND = ''
 			if (account === NOT_FOUND) {
-				this.$router.push({name: 'login'})
+				this.$router.push({ name: 'login' })
 			}
 			else {
 				await this.loggedIn(account)
@@ -74,7 +132,7 @@ export default {
 
 				const curUrl = window.location.pathname
 				if (curUrl === '/') {
-					this.$router.push({name: 'home'})
+					this.$router.push({ name: 'home' })
 				}
 			}
 		}

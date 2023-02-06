@@ -10,6 +10,9 @@ const getters = {
     },
     accountMap(state) {
         return state.accountMap
+    },
+    showIncommingCall(state) {
+        return state.showIncommingCall
     }
 }
 

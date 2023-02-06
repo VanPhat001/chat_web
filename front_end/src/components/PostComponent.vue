@@ -49,7 +49,9 @@
             <div class="card-footer">
 
                 <div class="user-comment-box">
-                    <img class="avatar" :src="userLogin.avatar">
+                    <router-link :to="{ name: 'profile', params: { 'id': userLogin._id } }">
+                        <img class="avatar" :src="userLogin.avatar">
+                    </router-link>
 
                     <div class="input-box">
                         <input type="text" placeholder="soạn comment" @keydown.enter="sendComment"
@@ -340,11 +342,11 @@ export default {
             for (let i = 0; i < data.length; i++) {
                 const { value, suffix } = data[i];
                 if (diffMSec >= value) {
-                    const text = `${Math.round(diffMSec / value)} ${suffix}`
+                    const text = `${Math.trunc(diffMSec / value)} ${suffix}`
 
                     try { this.$refs['count-time'].textContent = text }
                     catch (error) { console.log(error) }
-                    
+
                     return
                 }
             }

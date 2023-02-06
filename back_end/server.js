@@ -38,6 +38,34 @@ io.on('connection', socket => {
         io.to(to).emit('receive-like-post', from, postId)
         console.log(`>> ${from} like post of ${to}`)
     })
+
+
+
+
+    socket.on('open-camera', ({ caller, receipient, stream }) => {
+        console.log('>>>>> open-camera')
+    })
+
+    socket.on('close-camera', ({ caller, receipient }) => {
+        console.log('>>>>> close-camera')
+    })
+
+    socket.on('ask-callId', ({ caller, receipient }) => {
+        console.log(`>>>>> ${caller} ask-callId ${receipient}`)
+
+        io.to(receipient).emit('ask-callId', {
+            caller: caller,
+            receipient: receipient
+        })
+    })
+
+    socket.on('response-callId', ({caller, receipient, callId}) => {
+        io.to(caller).emit('response-callId', {
+            caller: caller,
+            receipient: receipient,
+            callId: callId
+        })
+    })
 })
 
 

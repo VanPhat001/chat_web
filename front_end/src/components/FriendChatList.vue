@@ -10,13 +10,19 @@
                 <p class="name">{{ getAccount(friendId).lastName + ' ' + getAccount(friendId).firstName }}</p>
                 <template
                     v-if="index < lastMessages.length && lastMessages[index] !== undefined && lastMessages[index].content">
-                    <p class="text">
+
+                    <p class=text v-if="lastMessages[index].unsend">
+                        [Tin nhắn đã thu hồi]
+                    </p>
+
+                    <p class="text" v-else>
                         <span v-if="lastMessages[index].sender == accountLogin._id">Bạn: </span>
                         <span v-if="lastMessages[index].content.text">{{
                             lastMessages[index].content.text
                         }}</span>
                         <span v-else>[hình ảnh]</span>
                     </p>
+
                     <p class="time">{{ new Date(lastMessages[index].timeSend).toLocaleString() }}</p>
                 </template>
                 <div class="notify-number" v-if="notifyNumber[index] != 0">{{ notifyNumber[index] }}</div>

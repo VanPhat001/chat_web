@@ -17,29 +17,43 @@
                 <i class="fa-solid fa-bell"></i>
                 <div class="notify-number" v-show="notifyNumber > 0">{{ notifyNumber }}</div>
 
+                <div class="background" :class="{ 'show': openDropdown }"></div>
+
                 <DropdownComponent class="dropdown-component dropdown" :pOpen="openDropdown">
                     <template v-slot:default>
-                        <ul class="notify-list">
-                            <li class="notify" v-for="notify in notifyList" :key="notify._id">
-                                <!-- <router-link :to="`/post/${notify.postId}`"> -->
-                                <router-link :to="{ name: 'post', params: { 'id': notify.postId } }">
-                                    <img class="avatar" :src="getAccountMap(notify.accountId).avatar" alt="...">
 
-                                    <p class="content">
-                                        <template v-if="notify.type === 'comment'">
-                                            <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>comment bài
-                                                viết</b> của bạn
-                                        </template>
-                                        <template v-else>
-                                            <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>thích</b>
-                                            bài
-                                            viết
-                                            của bạn
-                                        </template>
-                                    </p>
-                                </router-link>
-                            </li>
-                        </ul>
+                        <template v-if="notifyList.length > 0">
+                            <ul class="notify-list">
+                                <li class="notify" v-for="notify in notifyList" :key="notify._id">
+                                    <!-- <router-link :to="`/post/${notify.postId}`"> -->
+                                    <router-link :to="{ name: 'post', params: { 'id': notify.postId } }">
+                                        <img class="avatar" :src="getAccountMap(notify.accountId).avatar" alt="...">
+
+                                        <p class="content">
+                                            <template v-if="notify.type === 'comment'">
+                                                <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa <b>comment
+                                                    bài
+                                                    viết</b> của bạn
+                                            </template>
+                                            <template v-else>
+                                                <b>{{ fullName(accountMap.get(notify.accountId) ) }}</b> vừa
+                                                <b>thích</b>
+                                                bài
+                                                viết
+                                                của bạn
+                                            </template>
+                                        </p>
+                                    </router-link>
+                                </li>
+                            </ul>
+                        </template>
+
+                        <template v-else>
+                            <div class="no-have-notify">
+                                Không có thông báo
+                            </div>
+                        </template>
+
                     </template>
                 </DropdownComponent>
             </span>
@@ -148,6 +162,16 @@ export default {
 
 
 <style lang="scss" scoped>
+.no-have-notify {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 20px;
+    height: 100%;
+}
+
 .dropdown-box {
     position: relative;
 
@@ -165,6 +189,18 @@ export default {
         height: var(--size);
         line-height: var(--size);
         text-align: center;
+    }
+
+    .background {
+        display: none;
+
+        &.show {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-color: transparent;
+        }
     }
 
     &>.dropdown {

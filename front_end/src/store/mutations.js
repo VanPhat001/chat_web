@@ -11,6 +11,10 @@ const mutations = {
         state.receiveMessageQueue.push(value)
     },
 
+    setShowIncommingCall(state, value) {
+        state.showIncommingCall = value
+    }
+
     // getAccountMap(state, accId) {
     //     return state.accountMap.get(accId)
     // },

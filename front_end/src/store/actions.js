@@ -10,13 +10,30 @@ const actions = {
         context.state.socket = io(config.socketDomain, {
             transports: ['websocket']
         })
-
+        
+        const socket = context.state.socket
         const sender = context.state.account._id
-        context.state.socket.emit('create-room', sender)
 
-        context.state.socket.on('receive-message-from-friend-chat', message => {
+        socket.emit('create-room', sender)
+
+        socket.on('receive-message-from-friend-chat', message => {
             console.log('receive message from friend', message)
             context.state.receiveMessageQueue.push(message)
+        })
+
+        socket.on('ask-callId', ({caller, receipient}) => {
+            console.log('>>>> receive [ask-callId] from another user')
+
+            context.state.userCallId = caller
+            context.commit('setShowIncommingCall', true)
+            ////////////////////////////
+            socket.emit('response-callId', {
+                caller: caller,
+                receipient: receipient,
+                callId: 'aaa bbb ccc giá trị của callId'
+            })
+            console.log('>>>> response callId')
+            ////////////////////////////
         })
     },
 

@@ -95,6 +95,8 @@ export default {
                 position: absolute;
                 bottom: 100%;
                 left: 0;
+                z-index: 1;
+
                 width: 100%;
                 height: 5px;
                 background-color: transparent;
@@ -125,6 +127,7 @@ export default {
             bottom: 98%;
             left: 50%;
             transform: translate(-50%, 0);
+            z-index: 1;
 
             background-color: var(--box-color);
             border-radius: 4px;

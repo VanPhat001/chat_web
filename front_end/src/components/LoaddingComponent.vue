@@ -1,6 +1,6 @@
 <template >
     <div class="loadding-component">
-        <div class="circle"></div>
+        <div class="spinner"></div>
     </div>
 </template>
 
@@ -23,7 +23,7 @@ export default {
 
     display: flex;
 
-    .circle {
+    .spinner {
         margin: auto;
         width: 112px;
         height: 112px;

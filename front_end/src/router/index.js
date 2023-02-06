@@ -65,12 +65,19 @@ const routes = [
         component: () => import('../components/PostSingle.vue')
     },
     {
+        path: '/call/:userId/:isCaller',
+        name: 'call',
+        component: () => import('../components/CallBox.vue')
+    },
+    {
+        path: '/:slug',
+        component: () => import('../components/Home.vue')
+    },
+    {
         path: '/test',
-        component: () => import('../components/FriendChatList.vue'),
+        component: () => import('../components/IncommingCall.vue'),
         props: {
-            pFriendsChatId: [],
-            pLastMessages: [],
-            pNotifyNumber: [],
+            pAccId: '63aabff5d7082f4b22f6a3a3'
         }
     }
 ]

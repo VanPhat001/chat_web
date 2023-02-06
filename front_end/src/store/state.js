@@ -8,7 +8,9 @@ const state = {
         MALE: 'male',
         FEMALE: 'female',
         OTHER: 'other'
-    })
+    }),
+    showIncommingCall: false,
+    userCallId: null
 }
 
 export default state

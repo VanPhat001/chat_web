@@ -7,13 +7,16 @@
                     <p class="name">{{ `${friendChatAcc.lastName} ${friendChatAcc.firstName}` }}</p>
                 </router-link>
 
+                <span class="btn btn-call" @click="openCallBox">
+                    <i class="fa-solid fa-phone"></i>
+                </span>
                 <span class="btn btn-info" @click="openOrCloseSideBarRight">
                     <i class="fa-solid fa-info"></i>
                 </span>
             </template>
         </div>
 
-        <div class="message-list" :class="{'loadding': !loaded, 'loaded': loaded}">
+        <div class="message-list" :class="{ 'loadding': !loaded, 'loaded': loaded }">
             <LoaddingComponent class="loadding-component view"></LoaddingComponent>
 
             <div :class="{ 'message-info': true, 'right': message.sender === accountLogin._id, 'left': message.sender === friendChatAcc._id }"
@@ -66,7 +69,7 @@
             <div class="row">
                 <div class="col col-fill pos-relative">
                     <textarea placeholder="Enter to submit" v-model="text" @keydown="debounce"
-                        @keydown.enter.prevent="sendMessage"></textarea>
+                        @keydown.enter.prevent="sendMessage" @paste="debounce"></textarea>
 
                     <div class="emoji-picker-box">
                         <EmojiPicker v-show="openEmojiPicker" class="emoji-picker" @onSelectEmoji="selectEmojiHandle">
@@ -97,12 +100,12 @@
     .loadding-component.view {
         --background-color: #242526;
         --color: white;
-    
+
         position: absolute;
         inset: 0;
         z-index: 900;
     }
-    
+
     .message-info {
         height: 0;
     }
@@ -152,6 +155,7 @@
         position: absolute;
         bottom: 100%;
         right: 0;
+        z-index: 1;
     }
 
     .btn-emoji {
@@ -192,8 +196,8 @@
             font-size: 1.3rem;
         }
 
-        .btn-info {
-            margin-left: auto;
+        .btn-info,
+        .btn-call {
             border-radius: 50%;
             font-size: 15px;
             width: 30px;
@@ -208,6 +212,14 @@
             &:hover {
                 opacity: 1;
             }
+        }
+
+        .btn-call {
+            margin-left: auto;
+        }
+
+        .btn-info {
+            margin-left: 4px;
         }
     }
 
@@ -302,7 +314,6 @@
             border: 1px solid #555;
             background-color: #494949;
             border-radius: 2px;
-            overflow: hidden;
 
             .col {
                 background-color: transparent;
@@ -311,7 +322,7 @@
                     flex: 1;
                     resize: none;
                     font-size: 15px;
-                    padding: 5px 3px;
+                    padding: 3px 3px 2px;
                     background-color: transparent;
                     color: rgb(216, 216, 216);
                     border: none;
@@ -351,7 +362,7 @@ import { mapActions } from 'vuex'
 import helper from '../helper'
 import messageService from '../services/message.service'
 export default {
-    emits: ['onInfoClick', 'sendMessage'],
+    emits: ['onInfoClick', 'sendMessage', 'onImageClick'],
     components: {
         ExpandBox,
         EmojiPicker,
@@ -407,6 +418,29 @@ export default {
         scrollToLastMessage() {
             const element = document.getElementById('hidden-item')
             element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
+        },
+
+        openCallBox() {
+            // this.$router.push({
+            //     name: 'call',
+            //     params: {
+            //         userId: this.friendChatId,
+            //         isCaller: true
+            //     }
+            // })
+
+            const routeData = this.$router.resolve({
+                name: 'call',
+                params: {
+                    userId: this.friendChatId,
+                    isCaller: true
+                }
+            })
+            window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
+        },
+
+        openImageFullScreen(imgLink) {
+            this.$emit('onImageClick', imgLink)
         },
 
         openOrCloseSideBarRight() {
