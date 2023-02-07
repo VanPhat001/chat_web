@@ -59,12 +59,20 @@ io.on('connection', socket => {
         })
     })
 
-    socket.on('response-callId', ({caller, receipient, callId}) => {
+    socket.on('response-callId', ({ caller, receipient, callId }) => {
         io.to(caller).emit('response-callId', {
             caller: caller,
             receipient: receipient,
             callId: callId
         })
+    })
+
+    socket.on('reject-call', ({ from, to }) => {
+        io.to(to).emit('reject-call', { from, to })
+    })
+
+    socket.on('finish-call', ({ from, to }) => {
+        io.to(to).emit('finish-call', { from, to })
     })
 })
 

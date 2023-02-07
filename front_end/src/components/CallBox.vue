@@ -54,6 +54,12 @@ export default {
         },
         socket() {
             return this.$store.state.socket
+        },
+        localVideo() {
+            return document.querySelector('.local-video')
+        },
+        remote() {
+            return document.querySelector('.remote-video')
         }
 
     },
@@ -67,7 +73,12 @@ export default {
         },
 
         cancelCall() {
-            window.close()
+            // window.close()
+            this.socket.emit('finish-call', {
+                from: this.userLogin._id,
+                to: this.getUserCallId
+            })
+            this.$router.go(-1)
         },
 
         openUserCamera() {
@@ -78,9 +89,9 @@ export default {
                     .then(localStream => {
                         this.localStream = localStream
 
-                        const el = document.querySelector('.local-video')
-                        el.srcObject = localStream
-                        el.play()
+                        const video = this.localVideo
+                        video.srcObject = localStream
+                        video.play()
 
                         this.socket.emit('open-camera', {
                             caller: this.userLogin._id,
@@ -124,10 +135,28 @@ export default {
             })
             // response-callId
             this.socket.on('response-callId', ({ caller, receipient, callId }) => {
+                this.socket.off('response-callId')
+
                 console.log('receive:', { caller, receipient, callId })
             })
         }
 
+        this.socket.on('finish-call', ({ from, to }) => {            
+            this.$router.go(-1)
+        })
+
+        this.socket.on('reject-call', ({from, to}) => {
+            this.socket.off('reject-call')
+
+            this.$router.go(-1)
+        })
+
+    },
+
+    unmounted() {
+        this.socket.off('response-callId')
+        this.socket.off('finish-call')
+        this.socket.off('reject-call')
     }
 }
 </script>

@@ -10,7 +10,7 @@ export default {
     data() {
         return {
             username: '',
-            password: '',
+            password: '1234',
             saveAccount: false,
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,

@@ -6,7 +6,7 @@
 
 		<main>
 			<IncommingCall v-if="showIncommingCall" class="incomming-call" :pAccId="$store.state.userCallId"
-				@onAcceptCall="acceptCall" @onCancelCall="cancelCall"></IncommingCall>
+				@onAcceptCall="acceptCall" @onCancelCall="rejectCall"></IncommingCall>
 			<router-view :key="$route.fullPath"></router-view>
 		</main>
 	</div>
@@ -72,6 +72,9 @@ export default {
 		},
 		showIncommingCall() {
 			return this.$store.state.showIncommingCall
+		},
+		socket() {
+			return this.$store.state.socket
 		}
 	},
 	methods: {
@@ -84,28 +87,33 @@ export default {
 			this.setShowIncommingCall(false)
 
 
-			// this.$router.push({
-			// 	name: 'call',
-			// 	params: {
-			// 		userId: userCallId,
-			// 		isCaller: false
-			// 	}
-			// })
-
-			const routeData = this.$router.resolve({
+			this.$router.push({
 				name: 'call',
 				params: {
 					userId: userCallId,
 					isCaller: false
 				}
 			})
-			window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
+
+			// const routeData = this.$router.resolve({
+			// 	name: 'call',
+			// 	params: {
+			// 		userId: userCallId,
+			// 		isCaller: false
+			// 	}
+			// })
+			// window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
 		},
 
-		cancelCall(userCallId) {
-			console.log('cancel', userCallId)
+		rejectCall(userCallId) {
+			console.log('reject-call', userCallId)
 
 			this.setShowIncommingCall(false)
+
+			this.socket.emit('reject-call', {
+				from: this.$store.state.account._id,
+				to: userCallId
+			})
 		}
 	},
 	async created() {

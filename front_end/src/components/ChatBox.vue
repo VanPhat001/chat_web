@@ -421,22 +421,22 @@ export default {
         },
 
         openCallBox() {
-            // this.$router.push({
-            //     name: 'call',
-            //     params: {
-            //         userId: this.friendChatId,
-            //         isCaller: true
-            //     }
-            // })
-
-            const routeData = this.$router.resolve({
+            this.$router.push({
                 name: 'call',
                 params: {
                     userId: this.friendChatId,
                     isCaller: true
                 }
             })
-            window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
+
+            // const routeData = this.$router.resolve({
+            //     name: 'call',
+            //     params: {
+            //         userId: this.friendChatId,
+            //         isCaller: true
+            //     }
+            // })
+            // window.open(routeData.href, '', `width=${window.outerWidth},height=${window.outerHeight}`)
         },
 
         openImageFullScreen(imgLink) {
