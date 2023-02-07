@@ -2,6 +2,7 @@
 
     <div class="call-box">
         <video class="stream-video local-video"></video>
+        <video src="" class="stream-video remote-video"></video>
 
         <div class="call-controls">
             <div class="main-box">
@@ -12,7 +13,7 @@
                 <button class="btn btn-cancel" @click="cancelCall">
                     <i class="fa-solid fa-phone-slash"></i>
                 </button>
-                <button class="btn" :class="{ 'active': openCamera }" @click="openUserCamera"><i
+                <button class="btn" :class="{ 'active': openCamera }" @click="changeStateUserCamera"><i
                         class="fa-solid fa-camera"></i></button>
                 <button class="btn" :class="{ 'active': openMic }" @click="openUserMic"><i
                         class="fa-solid fa-microphone"></i></button>
@@ -32,7 +33,9 @@ export default {
         return {
             openCamera: false,
             openMic: false,
-            localStream: null
+            localStream: null,
+            remoteCallId: null,
+            remoteStream: null,
         }
     },
     computed: {
@@ -58,8 +61,11 @@ export default {
         localVideo() {
             return document.querySelector('.local-video')
         },
-        remote() {
+        remoteVideo() {
             return document.querySelector('.remote-video')
+        },
+        peer() {
+            return this.$store.state.peer
         }
 
     },
@@ -81,51 +87,99 @@ export default {
             this.$router.go(-1)
         },
 
-        openUserCamera() {
-            this.openCamera = !this.openCamera
+        changeStateUserCamera() {
+            this.openCamera ? this.closeUserCamera() : this.openUserCamera()
+        },
 
-            if (this.openCamera) {
-                this.getUserMedia({ video: true, audio: true })
-                    .then(localStream => {
-                        this.localStream = localStream
+        async openUserCamera() {
+            this.openCamera = true
 
-                        const video = this.localVideo
-                        video.srcObject = localStream
-                        video.play()
+            try {
+                const localStream = await this.getUserMedia({ video: true, audio: true })
+                this.localStream = localStream
 
-                        this.socket.emit('open-camera', {
-                            caller: this.userLogin._id,
-                            receipient: this.getUserCallId,
-                            stream: localStream
-                        })
+                const video = this.localVideo
+                video.srcObject = localStream
+                video.onloadedmetadata = () => {
+                    video.play()
+                }
 
-                    })
-                    .catch(err => console.log(err))
-            }
-            else {
-                this.localStream?.getTracks().forEach((track) => {
-                    track.stop()
-                })
-                this.localStream = null
-                document.querySelector('.local-video').srcObject = null
 
-                this.socket.emit('close-camera', {
-                    caller: this.userLogin._id,
-                    receipient: this.getUserCallId
-                })
-            }
+                // this.socket.emit('open-camera', {
+                //     caller: this.userLogin._id,
+                //     receipient: this.getUserCallId,
+                //     stream: localStream
+                // })
+            } catch (error) { console.log(error) }
+        },
+
+        closeUserCamera() {
+            this.openCamera = false
+
+            this.localStream?.getTracks().forEach((track) => {
+                track.stop()
+            })
+            this.localStream = null
+            this.localVideo.srcObject = null
+
+            // this.socket.emit('close-camera', {
+            //     caller: this.userLogin._id,
+            //     receipient: this.getUserCallId
+            // })
         },
 
         openUserMic() {
             this.openMic = !this.openMic
+        },
+
+        async connectToCaller() {
+            await this.openUserCamera()
+
+            const call = this.peer.call(this.remoteCallId, this.localStream)
+            call.on('stream', remoteStream => {
+                this.remoteStream = remoteStream
+
+                const video = this.remoteVideo
+                video.srcObject = this.remoteStream
+                video.onloadedmetadata = () => {
+                    video.play()
+                }
+            })
+        },
+
+        async answerCaller() {
+            await this.openUserCamera()
+
+            this.peer.on('call', async call => {
+                call.answer(this.localStream)
+
+                call.on('stream', remoteStream => {
+                    this.remoteStream = remoteStream
+
+                    const video = this.remoteVideo
+                    video.srcObject = this.remoteStream
+                    video.onloadedmetadata = () => {
+                        video.play()
+                    }
+                })
+            })
         }
     },
+
     async created() {
         if (this.userCall === undefined) {
             await this.pushToAccountMap([this.getUserCallId])
         }
 
-        // receive-callId
+        this.socket.on('finish-call', ({ from, to }) => {
+            this.$router.go(-1)
+        })
+
+        this.socket.on('reject-call', ({ from, to }) => {
+            this.socket.off('reject-call')
+
+            this.$router.go(-1)
+        })
 
         if (this.getIsCaller) {
             // ask-callId
@@ -134,29 +188,51 @@ export default {
                 receipient: this.getUserCallId
             })
             // response-callId
-            this.socket.on('response-callId', ({ caller, receipient, callId }) => {
+            this.socket.on('response-callId', async ({ caller, receipient, callId }) => {
                 this.socket.off('response-callId')
 
+                this.remoteCallId = callId
                 console.log('receive:', { caller, receipient, callId })
             })
         }
+        else {
+            this.socket.emit('ready-stream', {
+                from: this.userLogin._id,
+                to: this.getUserCallId
+            })
 
-        this.socket.on('finish-call', ({ from, to }) => {            
-            this.$router.go(-1)
+            await this.answerCaller()
+        }
+    },
+
+    mounted() {
+        console.log('rendered')
+
+        this.socket.on('ready-stream', ({ from, to }) => {
+            this.connectToCaller()
         })
+    },
 
-        this.socket.on('reject-call', ({from, to}) => {
-            this.socket.off('reject-call')
-
-            this.$router.go(-1)
-        })
-
+    watch: {
+        remoteStream() {
+            if (this.remoteStream) {
+                document.querySelector('.avatar').style.display = 'none'
+            }
+        }
     },
 
     unmounted() {
         this.socket.off('response-callId')
         this.socket.off('finish-call')
         this.socket.off('reject-call')
+        this.socket.off('ready-stream')
+
+        this.localStream?.getTracks().forEach((track) => {
+            track.stop()
+        })
+        this.remoteStream?.getTracks().forEach((track) => {
+            track.stop()
+        })
     }
 }
 </script>
@@ -176,11 +252,20 @@ video.stream-video {
     position: relative;
     display: flex;
 
-    .local-video {
+    .remote-video {
         flex: 1;
         width: 100%;
     }
 
+    .local-video {
+        border-radius: 3px;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 1;
+
+        max-width: 240px;
+    }
 
     .call-controls {
         position: absolute;

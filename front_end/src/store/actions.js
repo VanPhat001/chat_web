@@ -2,6 +2,7 @@ import config from '../config'
 import { io } from 'socket.io-client'
 import accountService from '../services/account.service'
 import messageService from '../services/message.service'
+import { Peer } from 'peerjs';
 
 import helper from '../helper'
 
@@ -10,7 +11,7 @@ const actions = {
         context.state.socket = io(config.socketDomain, {
             transports: ['websocket']
         })
-        
+
         const socket = context.state.socket
         const sender = context.state.account._id
 
@@ -21,7 +22,7 @@ const actions = {
             context.state.receiveMessageQueue.push(message)
         })
 
-        socket.on('ask-callId', ({caller, receipient}) => {
+        socket.on('ask-callId', ({ caller, receipient }) => {
             console.log('>>>> receive [ask-callId] from another user')
 
             context.state.userCallId = caller
@@ -30,7 +31,7 @@ const actions = {
             socket.emit('response-callId', {
                 caller: caller,
                 receipient: receipient,
-                callId: 'aaa bbb ccc giá trị của callId'
+                callId: context.state.localCallId
             })
             console.log('>>>> response callId')
             ////////////////////////////
@@ -106,6 +107,12 @@ const actions = {
         // await accountService.updateById(account._id, { timeLastActive: null })
         // account.timeLastActive = null
         await dispatch('userOnline')
+
+        const peer = new Peer()
+        peer.on('open', id => {
+            state.peer = peer
+            state.localCallId = id
+        })
 
         // alert('Đăng nhập thành công!')
         state.accountMap.set(account._id, account)

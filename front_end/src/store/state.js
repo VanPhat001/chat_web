@@ -9,8 +9,11 @@ const state = {
         FEMALE: 'female',
         OTHER: 'other'
     }),
+
+    userCallId: null, // lưu trữ id của tài khoản người gọi đến
     showIncommingCall: false,
-    userCallId: null
+    localCallId: null,
+    peer: null
 }
 
 export default state
